@@ -71,7 +71,7 @@ public class HoursColombiaSuite {
     public void setup() {
         Configuration.browser = "chrome";
         Configuration.browserSize = "1920x1080"; // sets window size
-        Configuration.headless = false;
+        Configuration.headless = true;
         // Optional: specify temp user data dir to avoid conflicts
         Configuration.browserCapabilities = new ChromeOptions()
                 .addArguments("--no-sandbox")
