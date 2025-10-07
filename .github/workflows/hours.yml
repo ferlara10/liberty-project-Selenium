@@ -1,4 +1,4 @@
-name: Run TestNG Suite
+name: Run Hours Suite
 
 on:
   workflow_dispatch:       # allows manual trigger
@@ -9,8 +9,8 @@ on:
         default: "testng.xml"
         type: choice
         options:
-          - CO.xml
-          - regression.xml
+          - Colombia.xml
+          - International.xml
           - testng.xml
 
 jobs:
