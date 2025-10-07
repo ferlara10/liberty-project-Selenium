@@ -1,0 +1,54 @@
+name: Run TestNG Suite
+
+on:
+  workflow_dispatch:       # allows manual trigger
+    inputs:
+      suite:
+        description: "Choose which TestNG suite to run"
+        required: true
+        default: "testng.xml"
+        type: choice
+        options:
+          - CO.xml
+          - regression.xml
+          - full.xml
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Run TestNG Suite
+        run: |
+          echo "Running suite: ${{ github.event.inputs.suite }}"
+          mvn clean test -DsuiteXmlFile=${{ github.event.inputs.suite }} -Dselenide.headless=true
+
+      - name: Generate Allure Report
+        run: |
+          allure generate allure-results -o allure-report --clean
+
+      - name: Upload Allure Report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report
+
+
+          
