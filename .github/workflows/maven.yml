@@ -11,7 +11,7 @@ on:
         options:
           - CO.xml
           - regression.xml
-          - full.xml
+          - testng.xml
 
 jobs:
   run-tests:
