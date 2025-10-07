@@ -72,6 +72,14 @@ public class HoursColombiaSuite {
         Configuration.browser = "chrome";
         Configuration.browserSize = "1920x1080"; // sets window size
         Configuration.headless = false;
+        // Optional: specify temp user data dir to avoid conflicts
+        Configuration.browserCapabilities = new ChromeOptions()
+                .addArguments("--no-sandbox")
+                .addArguments("--disable-dev-shm-usage")
+                .addArguments("--disable-gpu")
+                .addArguments("--remote-allow-origins=*")
+                .addArguments("--user-data-dir=/tmp/chrome-profile-" + System.currentTimeMillis())
+                .setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
     }
 
     @DataProvider(name = "jsonData")
