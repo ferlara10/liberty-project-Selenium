@@ -4,13 +4,13 @@ import com.codeborne.selenide.Configuration;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qameta.allure.Allure;
-import io.qameta.allure.Step;
 import io.qameta.allure.model.Status;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.SkipException;
 import org.testng.annotations.*;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 import org.testng.asserts.Assertion;
 import pages.HomePage;
