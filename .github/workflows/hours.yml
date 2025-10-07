@@ -35,6 +35,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      - name: Install Allure CLI
+        run: |
+          sudo apt-add-repository ppa:qameta/allure -y
+          sudo apt-get update
+          sudo apt-get install allure -y
+    
+
       - name: Run TestNG Suite
         run: |
           echo "Running suite: ${{ github.event.inputs.suite }}"
@@ -44,6 +51,7 @@ jobs:
       - name: Generate Allure Report
         run: |
           allure generate allure-results -o allure-report --clean
+        continue-on-error: true
 
       - name: Upload Allure Report as artifact
         uses: actions/upload-artifact@v4
