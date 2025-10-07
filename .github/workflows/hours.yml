@@ -36,7 +36,11 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Install Allure CLI
-        uses: allure-framework/allure-action@v2
+        run: |
+          wget https://github.com/allure-framework/allure2/releases/download/2.25.3/allure-2.25.3.tgz
+          tar -zxvf allure-2.25.3.tgz
+          sudo mv allure-2.25.3 /opt/allure
+          sudo ln -s /opt/allure/bin/allure /usr/bin/allure
     
 
       - name: Run TestNG Suite
