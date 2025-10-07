@@ -39,6 +39,7 @@ jobs:
         run: |
           echo "Running suite: ${{ github.event.inputs.suite }}"
           mvn clean test -DsuiteXmlFile=${{ github.event.inputs.suite }} -Dselenide.headless=true
+        continue-on-error: true
 
       - name: Generate Allure Report
         run: |
@@ -49,6 +50,13 @@ jobs:
         with:
           name: allure-report
           path: allure-report
+
+      # Upload Selenide screenshots / test reports
+      - name: Upload Test Screenshots and Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-screenshots
+          path: build/reports/tests/
 
 
           
