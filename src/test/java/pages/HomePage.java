@@ -6,6 +6,7 @@ import pages.co.SurchargeRequestCOPage;
 import pages.co.TimeSheetRequestCOPage;
 import pages.cr.TimeSheetRequestCRPage;
 import pages.in.TimeSheetRequestInternationalPage;
+import pages.pa.TimeSheetRequestPAPage;
 
 import static com.codeborne.selenide.Selenide.*;
 
@@ -153,6 +154,10 @@ public class HomePage {
         $(timesheetHistoryLink).click();
     }
 
+    public TimeSheetRequestPAPage navigateRequestPA(String language, String company){
+        $("a[title=\"Solicitud de Horas Extras\"]").click();
+        return new TimeSheetRequestPAPage();
+    }
 
     //Colombia Menu
     public TimeSheetRequestPage navigateRequest(String language, String company){

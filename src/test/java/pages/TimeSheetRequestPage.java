@@ -80,7 +80,7 @@ public class TimeSheetRequestPage {
                 result.put("Interval", i);
             if (name.equals("Status") || name.equals("Estado"))
                 result.put("Status", i);
-            if (name.equals("Actions") || name.equals("Acciones"))
+            if (name.equals("Actions") || name.equals("Acciones") || name.equals("Acción"))
                 result.put("Actions", i);
             if (name.equals("Request Date") || name.equals("F. Solicitud") || name.equals("F. de Solicitud"))
                 result.put("Request Date", i);

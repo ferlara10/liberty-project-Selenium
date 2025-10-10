@@ -6,12 +6,14 @@ import org.json.JSONObject;
 import pojo.IColombia;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import pojo.IInternational;
+import pojo.IPanama;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -60,6 +62,7 @@ public class CommonTest {
         Object [] dataArray;
         switch (branch){
             case "CO": dataArray = mapper.readValue(a, IColombia[].class);      break;
+            case "PA": dataArray = mapper.readValue(a, IPanama[].class);      break;
             case "XX": dataArray = mapper.readValue(a, IInternational[].class); break;
             default: dataArray = mapper.readValue(a, IColombia[].class);
         }
@@ -128,6 +131,35 @@ public class CommonTest {
                 apiURL, user, authToken, table, company, scenarioName, employee, dateBeg, dateBeg);
 
         return getJsonObject(url).getJSONObject("data");
+    }
+
+    public static void uploadDummyFile(String locator){
+        $(locator).uploadFile(new File(
+                Objects.requireNonNull(
+                        CommonTest.class.getClassLoader().getResource("dummy.txt")
+                ).getFile()));
+    }
+
+    public static String getDateBaseOnLanguage(String language, String requestDate){
+        String convertedDate = "";
+        if (language.equals("English"))
+            convertedDate = CommonTest.convertDate(requestDate,"E");
+        else
+            convertedDate = CommonTest.convertDate(requestDate,"S");
+        return convertedDate;
+    }
+
+    public static String getInterval(String initialHour1, String finalHour1, String finalHour2, String finalHour3){
+        String result = initialHour1+" - ";
+        if (finalHour2.isEmpty() && finalHour3.isEmpty())
+            return result+finalHour1;
+        else{
+            if (finalHour3.isEmpty())
+                return result+finalHour2;
+            else
+                return result+finalHour3;
+        }
+
     }
 
     public static void waitForPageToLoad() {
