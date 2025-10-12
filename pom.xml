@@ -65,7 +65,8 @@
                 <version>3.2.5</version>
                 <configuration>
                     <suiteXmlFiles>
-                        <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
+                        <!-- <suiteXmlFile>${suiteXmlFile}</suiteXmlFile> -->
+                        <suiteXmlFile>Panama.xml</suiteXmlFile>
                     </suiteXmlFiles>
                 </configuration>
             </plugin>

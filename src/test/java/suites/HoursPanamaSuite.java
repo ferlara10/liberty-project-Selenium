@@ -121,9 +121,19 @@ public class HoursPanamaSuite {
             this.oneID = loginPage.getOneID();
 
             boolean requestExist = false;
+            scenario.setJornal("3");
+            scenario.setLunch("60");
+
+            scenario.setDayOpt1("1");
+            scenario.setDayOpt2("1");
+            scenario.setDayOpt3("1");
+            scenario.setTime2("10:00");
+            scenario.setOutTime2("11:00");
+            scenario.setTime3("12:00");
+            scenario.setOutTime3("13:00");
             TimeSheetRequestPAPage requestPage =
                     (TimeSheetRequestPAPage) homePage.navigateRequestPA(language,scenario.getCompany());
-            //requestPage.addTimesheetRequest(scenario);
+            requestPage.addTimesheetRequest(scenario);
             String status = language.equals("English") ? "Escalated" : "Escalado";
             requestExist = requestPage.verifyRequestPAExist(scenario,status,language,this.oneID);
             Assert.assertTrue(requestExist, "Don't able to find the request ");

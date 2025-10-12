@@ -1,6 +1,7 @@
 package pages.pa;
 
 import com.codeborne.selenide.*;
+import org.openqa.selenium.By;
 import pages.TimeSheetRequestPage;
 import pojo.IColombia;
 import pojo.IInternational;
@@ -9,9 +10,9 @@ import suites.utils.CommonTest;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.$$;
+import static com.codeborne.selenide.Selenide.*;
 
 public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
 
@@ -22,23 +23,27 @@ public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
     private String time1endInput = "#OutTime";
     private String time2Input = "#Time2";
     private String time2endInput = "#OutTime2";
-    private String time3Input = "#Tim3";
+    private String time3Input = "#Time3";
     private String time3endInput = "#OutTime3";
 
-    private String option1Checkbox = "#DayOpt1";
-    private String option2Checkbox = "#DayOpt2";
-    private String option3Checkbox = "#DayOpt3";
+    private By option1Checkbox = By.cssSelector( "label[for='DayOpt1']");
+    private By option2Checkbox = By.cssSelector("label[for='DayOpt2']");
+    private By option3Checkbox = By.cssSelector("label[for='DayOpt3']");
 
     private String reasonSelect = "#Reason";
+    private String lunchSelect = "#Lunch";
 
 
     public void addTimesheetRequest(IPanama request) throws IOException {
         this.addRequest();
         //fill the form
-        //$(jornalInput).selectOptionByValue(request.getJornal());
-        String date = CommonTest.convertDate(request.getDateBeg(),"S");
-        $(getDateInputLocator()).setValue(date);
-        //$(scheduleInput).selectOptionByValue(request.getSchedule());
+        String journal = request.getJornal();
+        $(jornalInput).selectOptionByValue(journal);
+
+        $(scheduleInput).selectOptionByValue(request.getSchedule());
+
+        if (journal.equals("3") || journal.equals("4"))
+            $(lunchSelect).selectOptionByValue(request.getLunch());
 
         if (!request.getTime().isEmpty())
             CommonTest.enterTime(request.getTime(),time1Input);
@@ -64,9 +69,15 @@ public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
         if (request.getDayOpt3().equals("1"))
             $(option3Checkbox).click();
 
-        $(reasonSelect).selectOption(request.getReason());
+        String reason = getReasonByValue(reasonSelect, request.getReason());
+
+        $(reasonSelect).selectOptionByValue(reason);
         $(getCommentLocator()).setValue("testing");
         CommonTest.uploadDummyFile(getAttachFileLocator());
+
+        //needs to be there because is hidden other elements
+        String date = CommonTest.convertDate(request.getDateBeg(),"S");
+        $(getDateInputLocator()).setValue(date);
 
         $(getSendButtonLocator()).click();
         try{
@@ -121,6 +132,20 @@ public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
             }
         }
         return null;
+    }
+
+    public String getReasonByValue(String selectLocator, String reason){
+
+        // Extract all option values
+        List<String> values = $(selectLocator).$$x(".//option").attributes("value");
+
+        for (String value : values){
+            if (!value.isEmpty() && value.substring(0,1).equals(reason)){
+                System.out.println("--?> "+value);
+                return value;
+            }
+        }
+        return "null";
     }
 
 }
