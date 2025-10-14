@@ -9,6 +9,9 @@ on:
         default: "testng.xml"
         type: choice
         options:
+          - Jamaica.xml
+          - Panama.xml
+          - CostaRica.xml
           - Colombia.xml
           - International.xml
           - testng.xml
