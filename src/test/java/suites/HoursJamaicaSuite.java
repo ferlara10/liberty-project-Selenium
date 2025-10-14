@@ -8,19 +8,11 @@ import io.qameta.allure.model.Status;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
-import org.testng.SkipException;
 import org.testng.annotations.*;
-import org.openqa.selenium.chrome.ChromeOptions;
-
-import org.testng.asserts.Assertion;
 import pages.HomePage;
 import pages.LoginPage;
-import pages.TimeSheetRequestPage;
-import pages.co.SurchargeRequestCOPage;
-import pages.co.TimeSheetRequestCOPage;
-import pages.cr.TimeSheetRequestCRPage;
-import pojo.IColombia;
-import pojo.IInternational;
+import pages.jm.TimeSheetRequestJMPage;
+import pojo.IJamaica;
 import suites.utils.CommonTest;
 
 import java.io.File;
@@ -30,8 +22,7 @@ import java.util.Objects;
 
 import static io.qameta.allure.Allure.step;
 
-
-public class HoursColombiaSuite {
+public class HoursJamaicaSuite {
 
     private static Object[][] cachedData;
     private String apiURL;
@@ -44,9 +35,8 @@ public class HoursColombiaSuite {
     private JSONObject managerInformation = null;
     private String managerPassword = "";
 
-    private String scenariosTable = "TEST_LLA-CO_Hours";
+    private String scenariosTable = "TEST_LLA-JM_Hours";
     private String oneID = "";
-
 
     @BeforeSuite
     @Parameters({"baseUrlParam", "apiEnvParam", "globalUserParam", "globalPassParam"})
@@ -62,8 +52,8 @@ public class HoursColombiaSuite {
             CommonTest commonTest = new CommonTest(apiEnv,this.globalUser,this.globalPass);
             this.apiURL = commonTest.getAPIURL();
             authToken = commonTest.getToken();
-            cachedData = commonTest.getScenarios(this.authToken,this.scenariosTable,"","CO");
-            System.out.println("finish...");
+            cachedData = commonTest.getScenarios(this.authToken,this.scenariosTable,"","JM");
+            System.out.println("finish fetch data...");
         }
     }
 
@@ -74,14 +64,15 @@ public class HoursColombiaSuite {
         Configuration.headless = true;
     }
 
+    //for debug
     @DataProvider(name = "jsonData")
     public Object[][] dataProviderJSON() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        List<IColombia> dataList = mapper.readValue(new File(
+        List<IJamaica> dataList = mapper.readValue(new File(
                 Objects.requireNonNull(
-                        getClass().getClassLoader().getResource("dataLNCCO.json")
+                        getClass().getClassLoader().getResource("dataJamaica.json")
                 ).getFile()
-        ), new TypeReference<List<IColombia>>() {});
+        ), new TypeReference<List<IJamaica>>() {});
 
         Object[][] dataArray = new Object[dataList.size()][1];
         for (int i = 0; i < dataList.size(); i++) {
@@ -90,38 +81,36 @@ public class HoursColombiaSuite {
         return dataArray;
     }
 
-
-    @DataProvider(name = "colombiaScenarios")
-    public Object[][] dataProviderColombia(){
+    @DataProvider(name = "jamaicaScenarios")
+    public Object[][] dataProviderJamaica(){
         return cachedData;
     }
 
-    @Test(dataProvider = "colombiaScenarios")
-    public void hoursFlow(IColombia scenario) throws IOException {
+    @Test(dataProvider = "jamaicaScenarios")
+    public void hoursFlow(IJamaica scenario) throws IOException {
         System.out.println("-->> Test initialized ");
 
-        step("Send the Request"+" - Class: "+scenario.getClasse(), () -> {
+        step("Send the Request"+" - Class: "+scenario.getCompany()+" - "+scenario.getScenario(), () -> {
             sendRequest(scenario);
         });
         step("Approve Request: " +scenario.getCompany()+", "+scenario.getScenario()+", " +
-                scenario.getEmployee()+", "+scenario.getDateBeg()+", "+
-                scenario.getTime()+", "+scenario.getOutTime()+", "+scenario.getCostCenter(), () -> {
+                scenario.getEmployee()+", "+scenario.getDateBeg()+", "+ scenario.getCostCenter(), () -> {
             approveRequest(scenario.getEmployee(), scenario.getCompany(), scenario);
         });
         step("Report", () -> {
-            reportResults(this.scenariosTable,scenario);
+            reportResults(scenario);
         });
         step("Revert Request: " + scenario.getEmployee(), () -> {
             revertRequest(scenario.getCompany(), scenario);
         });
         step("Delete Request", () -> {
-            deleteRequest(scenario.getEmployee(), scenario);
+            deleteRequest(scenario);
         });
 
-        System.out.println("Finish...");
+        System.out.println("Finish test case...");
     }
 
-    public void sendRequest(IColombia scenario){
+    public void sendRequest(IJamaica scenario){
         try{
             LoginPage loginPage = new LoginPage();
             loginPage.navigate(this.baseURL+scenario.getCompany()+"/");
@@ -131,16 +120,12 @@ public class HoursColombiaSuite {
             this.oneID = loginPage.getOneID();
 
             boolean requestExist = false;
-            if (scenario.getClasse().equals("HE")){
-                TimeSheetRequestCOPage requestPage =
-                        (TimeSheetRequestCOPage) homePage.navigateRequest(language,"CO");
-                requestPage.addTimesheetRequest(scenario);
-                requestExist = requestPage.verifyRequestExist(scenario);
-            }else{
-                SurchargeRequestCOPage requestPage = (SurchargeRequestCOPage) homePage.navigateSurchargeRequest("CO");
-                requestPage.addTimesheetRequest(scenario);
-                requestExist = requestPage.verifySurchargeRequestExist(scenario);
-            }
+            TimeSheetRequestJMPage requestPage =
+                    (TimeSheetRequestJMPage) homePage.navigateRequestJM(scenario.getClasse(),true);
+            requestPage.addTimesheetRequestJM(scenario);
+            String status = language.equals("English") ? "Escalated" : "Escalado";
+            requestExist = requestPage.verifyRequestExistJM(scenario, status, language);
+            //TODO - add more class
             Assert.assertTrue(requestExist, "Don't able to find the request ");
             homePage.logout();
             System.out.println("Step 1 - send request");
@@ -151,7 +136,7 @@ public class HoursColombiaSuite {
         }
     }
 
-    public void approveRequest(String employee, String company, Object scenario) throws IOException {
+    public void approveRequest(String employee, String company, IJamaica request) throws IOException {
 
         try{
             LoginPage loginPage = new LoginPage();
@@ -161,44 +146,53 @@ public class HoursColombiaSuite {
             this.managerPassword = loginPage.getUserPassword(this.apiURL,this.globalUser,this.authToken, managerCompany);
 
             loginPage.navigate(this.baseURL+managerCompany+"/");
+            String language = loginPage.getLanguage();
             HomePage homePage = loginPage.login(managerEmployee, this.managerPassword, "" );
+            String status = language.equals("English") ? "Pending" : "Pendiente";
+
             if (company.equals(managerCompany)){
-                //TODO - Same company scenario
-                TimeSheetRequestPage requestPage;
-                IColombia scene = (IColombia) scenario;
-                if (scene.getClasse().equals("HE")){
-                    requestPage = homePage.navigateOvertimeApprovals("Spanish");
-                }else{
-                    requestPage = homePage.navigateSurchargeApprovals("Spanish");
-                }
-                requestPage.approveRequest(scene, "Pendiente", this.oneID);
-                boolean requestExist = requestPage.verifyRequestExist(scene, "Pendiente", this.oneID);
+                //Same company scenario
+                TimeSheetRequestJMPage requestPage = (TimeSheetRequestJMPage)
+                        homePage.navigateApprovalsJM(request.getClasse(), language, true);
+
+                requestPage.approveRequestJM(request, status, language);
+                boolean requestExist = requestPage.verifyRequestExistJM(request, status, language);
                 homePage.logout();
                 Assert.assertFalse(requestExist, "I found a request. it's not supposed to be there");
 
             }else {
                 //TODO - Multicompany scenario
-                TimeSheetRequestPage requestPage;
-                IColombia scene = (IColombia) scenario;
-                if (scene.getClasse().equals("HE")){
-                    requestPage = homePage.navigateIntercompanyOvertime("Spanish",company);
-                }else{
-                    requestPage = homePage.navigateIntercompanySurcharge("Spanish",company);
-                }
-                requestPage.approveRequest(scene, "Pendiente", this.oneID);
-                boolean requestExist = requestPage.verifyRequestExist(scene, "Pendiente", this.oneID);
-                homePage.logout();
-                Assert.assertFalse(requestExist, "I found a request. it's not supposed to be there");
+                System.out.println("->");
             }
         }catch(AssertionError | IOException e){
+            HomePage homePage = new HomePage();
+            homePage.logout();
             Assert.fail(e.getMessage());
         }
         System.out.println("Step 2 - approve");
 
     }
 
+    public void reportResults(IJamaica scenario) throws IOException {
+        JSONObject data = CommonTest.getResult(this.apiURL, this.globalUser, this.authToken, this.scenariosTable,
+                scenario.getCompany(), scenario.getScenario(), scenario.getEmployee(),
+                scenario.getDateBeg(), scenario.getDateBeg());
 
-    public void revertRequest(String company, Object scenario){
+        JSONArray result = data.getJSONArray("result");
+        JSONArray expected = data.getJSONArray("expected");
+        String match = data.getString("match");
+        if (match.equals("SUCCESS"))
+            Allure.step("Validation passed", Status.PASSED);
+        else{
+            revertRequest(scenario.getCompany(),scenario);
+            deleteRequest(scenario);
+            Assert.fail("Data does not matches expected results. Result:" + data.get("match"));
+        }
+        System.out.println("Step 5 - report");
+    }
+
+
+    public void revertRequest(String company, IJamaica request){
 
         try{
             LoginPage loginPage = new LoginPage();
@@ -206,30 +200,24 @@ public class HoursColombiaSuite {
             String managerEmployee = this.managerInformation.getString("Employee");
 
             loginPage.navigate(this.baseURL+managerCompany+"/");
+            String language = loginPage.getLanguage();
             HomePage homePage = loginPage.login(managerEmployee, this.managerPassword, "" );
+
+            String status = language.equals("English") ? "Completed" : "Completado";
             if (company.equals(managerCompany)){
-                //TODO - Same company scenario
-                TimeSheetRequestPage requestPage;
-                IColombia scene = (IColombia) scenario;
-                if (scene.getClasse().equals("HE")){
-                    requestPage = homePage.navigateOvertimeApprovalsHistoric("Spanish");
-                }else{
-                    requestPage = homePage.navigateSurchargeApprovalsHistoric("Spanish");
-                }
-                requestPage.reverseRequest(scene, "Completado", this.oneID);
-                boolean requestExist = requestPage.verifyRequestExist(scene,"Completado",this.oneID);
+                //Same company scenario
+                TimeSheetRequestJMPage requestPage = (TimeSheetRequestJMPage)
+                        homePage.navigateApprovalsJM(request.getClasse(), language, false);
+
+
+                requestPage.reverseRequestJM(request, status, language);
+                boolean requestExist = requestPage.verifyRequestExistJM(request,status, language);
                 Assert.assertFalse(requestExist, "Don't able to find the request ");
                 homePage.logout();
 
             }else{
                 //TODO - Multicompany scenario
-                TimeSheetRequestPage requestPage ;
-                IColombia scene = (IColombia) scenario;
-                requestPage = homePage.navigateIntercompanyHistoric("Spanish");
-                requestPage.reverseRequest(scene, "Completado", this.oneID);
-                boolean requestExist = requestPage.verifyRequestExist(scene,"Completado",this.oneID);
-                Assert.assertFalse(requestExist, "Don't able to find the request ");
-                homePage.logout();
+                System.out.println("->");
             }
         }catch(AssertionError e){
             HomePage homePage = new HomePage();
@@ -239,7 +227,7 @@ public class HoursColombiaSuite {
         System.out.println("Step 3 - revert");
     }
 
-    public void deleteRequest(String username, IColombia scenario){
+    public void deleteRequest(IJamaica scenario){
 
         try{
             LoginPage loginPage = new LoginPage();
@@ -248,16 +236,12 @@ public class HoursColombiaSuite {
             HomePage homePage = loginPage.login(scenario.getEmployee(), this.employeePassword, "" );
 
             boolean requestExist = false;
-            if (scenario.getClasse().equals("HE")){
-                TimeSheetRequestCOPage requestPage =
-                        (TimeSheetRequestCOPage) homePage.navigateRequest(language,"CO");
-                requestPage.deleteTimesheetRequest(scenario);
-                requestExist = requestPage.verifyRequestExist(scenario);
-            }else{
-                SurchargeRequestCOPage requestPage = (SurchargeRequestCOPage) homePage.navigateSurchargeRequest("CO");
-                requestPage.deleteSurchargeRequest(scenario);
-                requestExist = requestPage.verifySurchargeRequestExist(scenario);
-            }
+            TimeSheetRequestJMPage requestPage =
+                    (TimeSheetRequestJMPage) homePage.navigateRequestJM(scenario.getClasse(),true);
+            String status = language.equals("English") ? "Escalated" : "Escalado";
+            requestPage.deleteTimesheetRequestJM(scenario,status,language);
+            requestExist = requestPage.verifyRequestExistJM(scenario, status, language);
+
             Assert.assertFalse(requestExist, "Don't able to find the request ");
             homePage.logout();
             System.out.println("Step 4 - delete");
@@ -270,22 +254,6 @@ public class HoursColombiaSuite {
     }
 
 
-    public void reportResults(String table, IColombia scenario) throws IOException {
-        JSONObject data = CommonTest.getResult(this.apiURL, this.globalUser, this.authToken, this.scenariosTable,
-                scenario.getCompany(), scenario.getScenario(), scenario.getEmployee(),
-                scenario.getDateBeg(), scenario.getDateBeg());
 
-        JSONArray result = data.getJSONArray("result");
-        JSONArray expected = data.getJSONArray("expected");
-        String match = data.getString("match");
-        if (match.equals("SUCCESS"))
-            Allure.step("Validation passed", Status.PASSED);
-        else{
-            revertRequest(scenario.getCompany(),scenario);
-            deleteRequest("",scenario);
-            Assert.fail("Data does not matches expected results. Result:" + data.get("match"));
-        }
-        System.out.println("Step 5 - report");
-    }
 
 }

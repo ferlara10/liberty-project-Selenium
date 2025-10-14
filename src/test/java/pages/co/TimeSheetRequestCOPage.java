@@ -12,19 +12,17 @@ import static com.codeborne.selenide.Selenide.*;
 
 public class TimeSheetRequestCOPage extends TimeSheetRequestPage {
 
-    private String initialHourInput = "#Time";
-    private String endHourInput = "#OutTime";
-    private String reasonSelect = "#Reason";
+
 
 
 
     public void addTimesheetRequest(IColombia request) throws IOException{
         this.addRequest();
         //fill the form
-        CommonTest.enterTime(request.getTime(),initialHourInput);
-        CommonTest.enterTime(request.getOutTime(),endHourInput);
+        CommonTest.enterTime(request.getTime(),getInitialHourInput());
+        CommonTest.enterTime(request.getOutTime(),getEndHourInput());
 
-        $(reasonSelect).selectOption(request.getReason());
+        $(getReasonSelect()).selectOption(request.getReason());
         $(getCostCenterLocator()).selectOptionByValue(request.getCostCenter());
         $(getCommentLocator()).setValue("testing");
         String date = CommonTest.convertDate(request.getDateBeg(),"S");

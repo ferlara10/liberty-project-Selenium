@@ -1,0 +1,16 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="Selenide Suite">
+    <!-- Define global suite parameter -->
+    <parameter name="baseUrlParam" value="https://qas.payroll123.net/dev/portal/" />
+    <parameter name="apiEnvParam" value="dev" />
+    <parameter name="globalUserParam" value="api-portal" />
+    <parameter name="globalPassParam" value="Temp123$" />
+    <listeners>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+    </listeners>
+    <test name="Hours Jamaica">
+        <classes>
+            <class name="suites.HoursJamaicaSuite"/>
+        </classes>
+    </test>
+</suite>

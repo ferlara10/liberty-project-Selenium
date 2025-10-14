@@ -10,7 +10,6 @@ import suites.utils.CommonTest;
 
 import java.util.HashMap;
 
-import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 
 public class TimeSheetRequestPage {
@@ -28,8 +27,12 @@ public class TimeSheetRequestPage {
     private String attachFileInput = "input[name=\"attach[]\"]";
     private String headerTable = ".table thead th";
 
+    private String initialHourInput = "#Time";
+    private String endHourInput = "#OutTime";
+    private String reasonSelect = "#Reason";
+
     public void addRequest(){
-        $(addButton).click();
+        CommonTest.click(addButton,false);
     }
 
     public String getAddButton(){
@@ -66,6 +69,18 @@ public class TimeSheetRequestPage {
 
     public String getHeaderTable (){
         return this.headerTable;
+    }
+
+    public String getInitialHourInput() {
+        return initialHourInput;
+    }
+
+    public String getEndHourInput() {
+        return endHourInput;
+    }
+
+    public String getReasonSelect() {
+        return reasonSelect;
     }
 
     public HashMap<String, Integer> getHeadersIndex(ElementsCollection header){
@@ -164,11 +179,16 @@ public class TimeSheetRequestPage {
         }
     }
 
-
     public boolean verifyRequestExist(IColombia request, String status, String id){
         Selenide.sleep(1000);
         SelenideElement row = searchDynamic(request, status, id);
         return row != null;
     }
 
+    public void changeFromDateFilter(String from){
+        String jsCode = "document.getElementById('filterdatefrom').value = '"+from+"';";
+        Selenide.executeJavaScript(jsCode);
+        Selenide.executeJavaScript("document.getElementById('filterdatefrom').dispatchEvent(new Event('change'));");
+        CommonTest.waitForPageToLoad();
+    }
 }

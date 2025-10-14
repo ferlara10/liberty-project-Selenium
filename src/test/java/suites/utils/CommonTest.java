@@ -1,5 +1,6 @@
 package suites.utils;
 
+import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selenide;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -13,11 +14,14 @@ import java.net.HttpURLConnection;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import pojo.IInternational;
+import pojo.IJamaica;
 import pojo.IPanama;
 
 import java.net.URL;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Objects;
 
 import static com.codeborne.selenide.Selenide.*;
@@ -64,6 +68,7 @@ public class CommonTest {
             case "CO": dataArray = mapper.readValue(a, IColombia[].class);      break;
             case "PA": dataArray = mapper.readValue(a, IPanama[].class);      break;
             case "XX": dataArray = mapper.readValue(a, IInternational[].class); break;
+            case "JM": dataArray = mapper.readValue(a, IJamaica[].class); break;
             default: dataArray = mapper.readValue(a, IColombia[].class);
         }
         Object[][] testData = new Object[dataArray.length][1];
@@ -121,7 +126,7 @@ public class CommonTest {
         Selenide.sleep(2000);
         String message = $("#modal_bdy_portalconfirm").getText();
         $x(buttonOKLocator).click();
-        Selenide.sleep(1000);
+        waitForPageToLoad();
         return message;
     }
 
@@ -163,10 +168,38 @@ public class CommonTest {
     }
 
     public static void waitForPageToLoad() {
-        Wait().until(webDriver ->
+        Wait().withTimeout(Duration.ofSeconds(20)).until(webDriver ->
                 Objects.equals(executeJavaScript("return document.readyState"), "complete") &&
                         Boolean.TRUE.equals(executeJavaScript("return jQuery.active == 0"))
         );
+    }
+
+    public static void click(String locator, boolean isXPath){
+        if (isXPath)
+            $x(locator).click();
+        else
+            $(locator).click();
+        waitForPageToLoad();
+    }
+
+    public static HashMap<String, Integer> getHeadersIIndex(ElementsCollection header){
+        HashMap<String, Integer> result = new HashMap<String, Integer>();;
+        for(int i=0; i < header.size() ;i++){
+            String name = header.get(i).getText();
+            if (name.equals("Date") || name.equals("Fecha"))
+                result.put("Date", i);
+            if (name.equals("Wage Type") || name.equals("Concepto"))
+                result.put("Wage Type", i);
+            if (name.equals("Cost Center") || name.equals("Centro de Costo"))
+                result.put("Cost Center", i);
+            if (name.equals("Status") || name.equals("Estado"))
+                result.put("Status", i);
+            if (name.equals("Request Date") || name.equals("F. Solicitud") || name.equals("F. de Solicitud"))
+                result.put("Request Date", i);
+            if(name.equals("Action"))
+                result.put("Action", i);
+        }
+        return result;
     }
 
 }

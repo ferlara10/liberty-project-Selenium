@@ -2,19 +2,16 @@ package pages.in;
 
 import com.codeborne.selenide.*;
 import org.testng.Assert;
-import org.testng.annotations.IFactoryAnnotation;
 import pages.TimeSheetRequestPage;
-import pojo.IColombia;
 import pojo.IInternational;
 import suites.utils.CommonTest;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Objects;
 
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
+import static suites.utils.CommonTest.*;
 
 public class TimeSheetRequestInternationalPage extends TimeSheetRequestPage {
 
@@ -57,8 +54,9 @@ public class TimeSheetRequestInternationalPage extends TimeSheetRequestPage {
         $(quantityInput).setValue(request.getNumber());
         $(getCostCenterLocator()).selectOptionByValue(request.getCostCenter());
         $(getCommentLocator()).setValue(request.getReason());
-        if(request.getCompany().equals("CNDDO") || request.getCompany().equals("LNGGT")){
-            uploadDummyFile();
+        if(request.getCompany().equals("CNDDO") || request.getCompany().equals("LNGGT") ||
+        request.getCompany().equals("LNHHN") || request.getCompany().equals("LNSSV")){
+            uploadDummyFile(getAttachFileLocator());
             $(reasonInput).setValue(request.getReason());
         }
 
@@ -118,25 +116,7 @@ public class TimeSheetRequestInternationalPage extends TimeSheetRequestPage {
         return null;
     }
 
-    public HashMap<String, Integer> getHeadersIIndex(ElementsCollection header){
-        HashMap<String, Integer> result = new HashMap<String, Integer>();;
-        for(int i=0; i < header.size() ;i++){
-            String name = header.get(i).getText();
-            if (name.equals("Date") || name.equals("Fecha"))
-                result.put("Date", i);
-            if (name.equals("Wage Type") || name.equals("Concepto"))
-                result.put("Wage Type", i);
-            if (name.equals("Cost Center") || name.equals("Centro de Costo"))
-                result.put("Cost Center", i);
-            if (name.equals("Status") || name.equals("Estado"))
-                result.put("Status", i);
-            if (name.equals("Request Date") || name.equals("F. Solicitud") || name.equals("F. de Solicitud"))
-                result.put("Request Date", i);
-            if(name.equals("Action"))
-                result.put("Action", i);
-        }
-        return result;
-    }
+
 
     public void deleteTimesheetRequest(IInternational request, String status, String language){
         SelenideElement row = searchIDynamic(request, status, language);
@@ -150,19 +130,5 @@ public class TimeSheetRequestInternationalPage extends TimeSheetRequestPage {
         }
     }
 
-    private void uploadDummyFile(){
-        $(getAttachFileLocator()).uploadFile(new File(
-                Objects.requireNonNull(
-                        getClass().getClassLoader().getResource("dummy.txt")
-                ).getFile()));
-    }
 
-    private String getDateBaseOnLanguage(String language, String requestDate){
-        String convertedDate = "";
-        if (language.equals("English"))
-            convertedDate = CommonTest.convertDate(requestDate,"E");
-        else
-            convertedDate = CommonTest.convertDate(requestDate,"S");
-        return convertedDate;
-    }
 }

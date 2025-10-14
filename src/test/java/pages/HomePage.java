@@ -6,7 +6,9 @@ import pages.co.SurchargeRequestCOPage;
 import pages.co.TimeSheetRequestCOPage;
 import pages.cr.TimeSheetRequestCRPage;
 import pages.in.TimeSheetRequestInternationalPage;
+import pages.jm.TimeSheetRequestJMPage;
 import pages.pa.TimeSheetRequestPAPage;
+import suites.utils.CommonTest;
 
 import static com.codeborne.selenide.Selenide.*;
 
@@ -212,9 +214,91 @@ public class HomePage {
 
     }
 
+    //Jamaica Menu
+    public TimeSheetRequestJMPage navigateRequestJM(String requestType, boolean isNewRequest){
+        String subMenu = "History";
+        String locator = "";
+        if (isNewRequest)
+            subMenu = "Requests";
+
+        if (requestType.equals("OR")){
+            $("a[title=\"Overtime Requests\"]").click();
+            locator = "//a[@title='Overtime Requests']/following-sibling::ul//a[@title='"+subMenu+"']";
+            CommonTest.click(locator,true);
+            System.out.println("-->");
+        }
+
+        if (requestType.equals("SBR")){
+            $("a[title=\"Standby Requests\"]").click();
+            locator = "//a[@title='Standby Requests']/following-sibling::ul//a[@title='"+subMenu+"']";
+            $x(locator).click();
+        }
+
+        if (requestType.equals("COR")){
+            $("a[title=\"Call Out Requests\"]").click();
+            locator = "//a[@title='Call Out Requests']/following-sibling::ul//a[@title='"+subMenu+"']";
+            $x(locator).click();
+        }
+
+        if (requestType.equals("SR")){
+            $("a[title=\"Shift Requests\"]").click();
+            locator = "//a[@title='Shift Requests']/following-sibling::ul//a[@title='"+subMenu+"']";
+            $x(locator).click();
+        }
+
+        return new TimeSheetRequestJMPage();
+    }
+
+    public TimeSheetRequestJMPage navigateApprovalsJM(String requestType,String language, boolean isNewRequest){
+
+        String subMenu1 = language.equals("Español") ? "Aprobaciones" : "Approvals";
+        String subMenu2 = language.equals("Español") ? "Historial" : "History";
+
+        if (requestType.equals("OR")){
+            String menu = language.equals("Español") ? "Aprobaciones Horas Extras" : "Overtime Approvals";
+
+            String locator1 = "a[title=\""+menu+"\"]";
+            $(locator1).click();
+            String subMenuResult = isNewRequest ? subMenu1 : subMenu2;
+            String locator2 = "//a[@title='"+menu+"']/following-sibling::ul//a[@title='"+subMenuResult+"']";
+            CommonTest.click(locator2,true);
+            System.out.println("-->");
+        }
+        if (requestType.equals("SBR")){
+            String menu = language.equals("Español") ? "Aprobaciones Standby" : "Standby Approvals";
+
+            String locator1 = "a[title=\""+menu+"\"]";
+            $(locator1).click();
+            String subMenuResult = isNewRequest ? subMenu1 : subMenu2;
+            String locator2 = "//a[@title='"+menu+"']/following-sibling::ul//a[@title='"+subMenuResult+"']";
+            CommonTest.click(locator2,true);
+            System.out.println("-->");
+        }
+        if (requestType.equals("COR")){
+            String menu = language.equals("Español") ? "Aprobaciones Call Out" : "Call Out Approvals";
+            String locator1 = "a[title=\""+menu+"\"]";
+            $(locator1).click();
+            String subMenuResult = isNewRequest ? subMenu1 : subMenu2;
+            String locator2 = "//a[@title='"+menu+"']/following-sibling::ul//a[@title='"+subMenuResult+"']";
+            CommonTest.click(locator2,true);
+            System.out.println("-->");
+        }
+        if (requestType.equals("SR")){
+            String menu = language.equals("Español") ? "Aprobaciones Shift" : "Shift Approvals";
+            String locator1 = "a[title=\""+menu+"\"]";
+            $(locator1).click();
+            String subMenuResult = isNewRequest ? subMenu1 : subMenu2;
+            String locator2 = "//a[@title='"+menu+"']/following-sibling::ul//a[@title='"+subMenuResult+"']";
+            CommonTest.click(locator2,true);
+            System.out.println("-->");
+        }
+
+        return new TimeSheetRequestJMPage();
+    }
+
     public void logout(){
         Selenide.sleep(1000);
-        $(logoutButton).click();
+        CommonTest.click(logoutButton,false);
     }
 
 

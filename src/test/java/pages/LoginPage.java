@@ -22,13 +22,12 @@ public class LoginPage {
         //TODO - handle the language because when you change it, refresh the page
         if (!language.isEmpty())
             $(languageSelect).selectOption(language);
-        $(loginButton).click();
+        CommonTest.click(loginButton,false);
         return new HomePage();
     }
 
     public void navigate(String url){
         open(url);
-        Selenide.sleep(1000);
         CommonTest.waitForPageToLoad();
     }
 
