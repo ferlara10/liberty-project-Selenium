@@ -1,6 +1,5 @@
 package pages;
 
-import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selenide;
 import pages.co.SurchargeRequestCOPage;
 import pages.co.TimeSheetRequestCOPage;
@@ -104,7 +103,8 @@ public class HomePage {
 
     public TimeSheetRequestPage navigateIntercompanyOvertimeInternational(String language, String company, String managerCompany){
         String complement = "";
-        if (managerCompany.equals("LNSSV")) //TODO - Could be necessary to add more companies
+        if (managerCompany.equals("LNSSV") || managerCompany.equals("LLACO") ||
+            managerCompany.equals("LNGGT") || managerCompany.equals("CNDDO") ) //TODO - Could be necessary to add more companies
             complement = " Horas";
         else
             complement = " Horas Extras";
@@ -225,7 +225,6 @@ public class HomePage {
             $("a[title=\"Overtime Requests\"]").click();
             locator = "//a[@title='Overtime Requests']/following-sibling::ul//a[@title='"+subMenu+"']";
             CommonTest.click(locator,true);
-            System.out.println("-->");
         }
 
         if (requestType.equals("SBR")){
@@ -262,7 +261,6 @@ public class HomePage {
             String subMenuResult = isNewRequest ? subMenu1 : subMenu2;
             String locator2 = "//a[@title='"+menu+"']/following-sibling::ul//a[@title='"+subMenuResult+"']";
             CommonTest.click(locator2,true);
-            System.out.println("-->");
         }
         if (requestType.equals("SBR")){
             String menu = language.equals("Español") ? "Aprobaciones Standby" : "Standby Approvals";
@@ -272,7 +270,6 @@ public class HomePage {
             String subMenuResult = isNewRequest ? subMenu1 : subMenu2;
             String locator2 = "//a[@title='"+menu+"']/following-sibling::ul//a[@title='"+subMenuResult+"']";
             CommonTest.click(locator2,true);
-            System.out.println("-->");
         }
         if (requestType.equals("COR")){
             String menu = language.equals("Español") ? "Aprobaciones Call Out" : "Call Out Approvals";
@@ -281,7 +278,6 @@ public class HomePage {
             String subMenuResult = isNewRequest ? subMenu1 : subMenu2;
             String locator2 = "//a[@title='"+menu+"']/following-sibling::ul//a[@title='"+subMenuResult+"']";
             CommonTest.click(locator2,true);
-            System.out.println("-->");
         }
         if (requestType.equals("SR")){
             String menu = language.equals("Español") ? "Aprobaciones Shift" : "Shift Approvals";
@@ -290,7 +286,6 @@ public class HomePage {
             String subMenuResult = isNewRequest ? subMenu1 : subMenu2;
             String locator2 = "//a[@title='"+menu+"']/following-sibling::ul//a[@title='"+subMenuResult+"']";
             CommonTest.click(locator2,true);
-            System.out.println("-->");
         }
 
         return new TimeSheetRequestJMPage();

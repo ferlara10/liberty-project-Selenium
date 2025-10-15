@@ -95,7 +95,7 @@ public class TimeSheetRequestInternationalPage extends TimeSheetRequestPage {
                 String dateConverted = getDateBaseOnLanguage(language,request.getDateBeg());
 
                 String requestDate = cells.get(columns.get("Date")).getText();
-                String wageType = cells.get(columns.get("Wage Type")).getText();
+                //String wageType = cells.get(columns.get("Wage Type")).getText();
                 //String costCenter = cells.get(columns.get("Cost Center")).getText();
                 String status = cells.get(columns.get("Status")).getText();
                 String enterDate = cells.get(columns.get("Request Date")).getText();
@@ -106,8 +106,7 @@ public class TimeSheetRequestInternationalPage extends TimeSheetRequestPage {
                     todayDate = CommonTest.getTodayDateEnglish();
 
 
-
-                if (dateConverted.equals(requestDate) && wageType.contains(request.getWageType())
+                if (dateConverted.equals(requestDate)
                         && enterDate.equals(todayDate) && status.equals(requestStatus)){
                     return rows.get(i);
                 }
