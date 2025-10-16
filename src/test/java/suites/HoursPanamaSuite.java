@@ -61,7 +61,7 @@ public class HoursPanamaSuite {
     public void setup() {
         Configuration.browser = "chrome";
         Configuration.browserSize = "1920x1080"; // sets window size
-        Configuration.headless = false;
+        Configuration.headless = true;
     }
 
     //for debug
@@ -86,7 +86,7 @@ public class HoursPanamaSuite {
         return cachedData;
     }
 
-    @Test(dataProvider = "jsonData")
+    @Test(dataProvider = "panamaScenarios")
     public void hoursFlow(IPanama scenario) throws IOException {
         System.out.println("-->> Test initialized ");
 
