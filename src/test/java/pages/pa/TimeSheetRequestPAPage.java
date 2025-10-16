@@ -2,9 +2,8 @@ package pages.pa;
 
 import com.codeborne.selenide.*;
 import org.openqa.selenium.By;
+import org.testng.Assert;
 import pages.TimeSheetRequestPage;
-import pojo.IColombia;
-import pojo.IInternational;
 import pojo.IPanama;
 import suites.utils.CommonTest;
 
@@ -12,7 +11,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.codeborne.selenide.Condition.enabled;
+import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.*;
+import static suites.utils.CommonTest.clickNoWait;
 
 public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
 
@@ -37,9 +39,11 @@ public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
     public void addTimesheetRequest(IPanama request) throws IOException {
         this.addRequest();
         //fill the form
-        String journal = request.getJornal();
-        $(jornalInput).selectOptionByValue(journal);
 
+        String journal = request.getJornal();
+        $(jornalInput).shouldBe(visible,enabled).selectOptionByValue(journal);
+
+        Selenide.sleep(2000);
         $(scheduleInput).selectOptionByValue(request.getSchedule());
 
         if (journal.equals("3") || journal.equals("4"))
@@ -47,6 +51,7 @@ public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
 
         if (!request.getTime().isEmpty())
             CommonTest.enterTime(request.getTime(),time1Input);
+
         if (!request.getOutTime().isEmpty())
             CommonTest.enterTime(request.getOutTime(),time1endInput);
 
@@ -61,16 +66,17 @@ public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
             CommonTest.enterTime(request.getOutTime3(),time3endInput);
 
         if (request.getDayOpt1().equals("1"))
-            $(option1Checkbox).click();
+            clickNoWait(option1Checkbox);
 
         if (request.getDayOpt2().equals("1"))
-            $(option2Checkbox).click();
+            clickNoWait(option2Checkbox);
 
         if (request.getDayOpt3().equals("1"))
-            $(option3Checkbox).click();
+            clickNoWait(option3Checkbox);
 
         String reason = getReasonByValue(reasonSelect, request.getReason());
-
+        if (reason.equals("null"))
+            throw new AssertionError("Reason: " +request.getReason()+" is not present in this company.");
         $(reasonSelect).selectOptionByValue(reason);
         $(getCommentLocator()).setValue("testing");
         CommonTest.uploadDummyFile(getAttachFileLocator());
@@ -81,10 +87,47 @@ public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
 
         $(getSendButtonLocator()).click();
         try{
-            $(this.getAddButton()).shouldBe(Condition.visible).should(Condition.clickable);
+            $(this.getAddButton()).shouldBe(visible).should(Condition.clickable);
         }catch (AssertionError e){
             String message = CommonTest.clickModal("//div[@class='modal-footer']//button[text()='Cerrar']");
             throw new AssertionError("I found an error message: "+message);
+        }
+    }
+
+    public void deleteTimesheetRequest(IPanama request, String status, String language, String oneId){
+        SelenideElement row = searchPADynamic(request, status, language, oneId);
+        if (row.exists()){
+            int index = getHeaderIndex("Action", "Acción",null,$$(getHeaderTable()));
+            SelenideElement column = row.$$("td").get(index);
+            column.$x(".//a[img[@title='Delete' or @title='Borrar']]").click();
+            CommonTest.clickModal("//*[@id=\"modal_portalconfirm_btn0\"]");
+        }else{
+            Assert.fail("Was not possible to find the request and delete it");
+        }
+    }
+
+    public void approvePARequest(IPanama request, String status, String id, String language){
+        SelenideElement row = searchPADynamic(request,status, language, id);
+        if (row.exists()){
+            int index = getHeaderIndex("Actions","Acciones",null,$$(getHeaderTable()));
+            SelenideElement column = row.$$("td").get(index);
+            column.$x(".//img[contains(@src,'icon_Approve.gif')]").click();
+            CommonTest.clickModal(".//button[@id='modal_portalconfirm_btn0']");
+        }else{
+            Assert.fail("Was not possible to find the request and approve it");
+        }
+    }
+
+    public void reversePARequest(IPanama request, String status, String oneId, String language){
+        SelenideElement row = searchPADynamic(request, status, language, oneId);
+        ElementsCollection headers = $$(getHeaderTable());
+        if (row.exists()){
+            int index = getHeaderIndex("Reverse","Reversar","Rev.",headers);
+            SelenideElement column = row.$$("td").get(index);
+            column.$x(".//img[contains(@src,'arrow-left.gif')]").click();
+            CommonTest.clickModal(".//button[@id='modal_portalconfirm_btn0']");
+        }else{
+            Assert.fail("Was not possible to find the request and reverse it");
         }
     }
 
@@ -111,12 +154,12 @@ public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
 
             if (dateCell.equals(convertedDate)){
 
-                String intervalUI = CommonTest.getInterval(request.getTime(), request.getOutTime(), request.getOutTime2(), request.getOutTime3());
+                //String intervalUI = CommonTest.getInterval(request.getTime(), request.getOutTime(), request.getOutTime2(), request.getOutTime3());
                 String dateConverted = CommonTest.getDateBaseOnLanguage(language,request.getDateBeg());
 
                 String oneID = cells.get(columns.get("OneID")).getText();
                 String requestDate = cells.get(columns.get("Date")).getText();
-                String interval = cells.get(columns.get("Interval")).getText();
+                //String interval = cells.get(columns.get("Interval")).getText();
                 String status = cells.get(columns.get("Status")).getText();
                 String enterDate = cells.get(columns.get("Request Date")).getText();
                 String todayDate = "";
@@ -125,7 +168,7 @@ public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
                 else
                     todayDate = CommonTest.getTodayDateEnglish();
 
-                if (requestDate.equals(dateConverted) && oneID.contains(oneId) && interval.equals(intervalUI)
+                if (requestDate.equals(dateConverted) && oneID.contains(oneId)
                         && enterDate.equals(todayDate) && status.equals(requestStatus)){
                     return rows.get(i);
                 }
@@ -138,12 +181,10 @@ public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
 
         // Extract all option values
         List<String> values = $(selectLocator).$$x(".//option").attributes("value");
-
+        int leng = reason.length();
         for (String value : values){
-            if (!value.isEmpty() && value.substring(0,1).equals(reason)){
-                System.out.println("--?> "+value);
+            if (!value.isEmpty() && value.substring(0,leng).equals(reason))
                 return value;
-            }
         }
         return "null";
     }

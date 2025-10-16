@@ -213,7 +213,7 @@ public class HoursInternationalSuite {
                 //TODO - Multicompany scenario
                 TimeSheetRequestInternationalPage requestPage ;
                 IInternational scene = (IInternational) scenario;
-                requestPage = (TimeSheetRequestInternationalPage) homePage.navigateIntercompanyHistoricInternational(language);
+                requestPage = (TimeSheetRequestInternationalPage) homePage.navigateIntercompanyHistoricInternational(language,company);
 
                 requestPage.reverseIRequest(scene, status, language);
                 boolean requestExist = requestPage.verifyRequestIExist(scene,status, language);

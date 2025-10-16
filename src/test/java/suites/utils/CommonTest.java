@@ -4,6 +4,7 @@ import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selenide;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.openqa.selenium.By;
 import pojo.IColombia;
 
 import java.io.BufferedReader;
@@ -180,6 +181,14 @@ public class CommonTest {
         else
             $(locator).click();
         waitForPageToLoad();
+    }
+
+    public static void clickNoWait(By locator) throws IOException{
+        try{
+            $(locator).click();
+        }catch (AssertionError e){
+            throw new AssertionError("Was not possible to click the element: "+locator);
+        }
     }
 
     public static HashMap<String, Integer> getHeadersIIndex(ElementsCollection header){

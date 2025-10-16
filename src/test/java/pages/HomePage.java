@@ -7,9 +7,9 @@ import pages.cr.TimeSheetRequestCRPage;
 import pages.in.TimeSheetRequestInternationalPage;
 import pages.jm.TimeSheetRequestJMPage;
 import pages.pa.TimeSheetRequestPAPage;
-import suites.utils.CommonTest;
 
 import static com.codeborne.selenide.Selenide.*;
+import static suites.utils.CommonTest.click;
 
 public class HomePage {
 
@@ -101,23 +101,28 @@ public class HomePage {
         }
     }
 
-    public TimeSheetRequestPage navigateIntercompanyOvertimeInternational(String language, String company, String managerCompany){
+    public TimeSheetRequestPage navigateIntercompanyOvertimeInternational
+            (String language, String company, String managerCompany){
         String complement = "";
         if (managerCompany.equals("LNSSV") || managerCompany.equals("LLACO") ||
-            managerCompany.equals("LNGGT") || managerCompany.equals("CNDDO") ) //TODO - Could be necessary to add more companies
+            managerCompany.equals("LNGGT") || managerCompany.equals("CNDDO") ||
+            managerCompany.equals("TTCCR") || managerCompany.equals("LNHHN"))                                         //TODO - Could be necessary to add more companies
             complement = " Horas";
         else
             complement = " Horas Extras";
-        String locator = "a[title=\""+company.substring(0,3)+complement+"\"]";
-        String locatorE = "a[title=\""+company.substring(0,3)+" TS Requests\"]";
-        if (language.equals("Spanish") || language.equals("Español")){
-            $(intercompanyApprovesLink).click();
-            $(locator).click();
-        }else{
-            $(intercompanyApprovalsEnglishLink).click();
-            $(locatorE).click();
-        }
-        return new TimeSheetRequestInternationalPage();
+
+        String locator1 = language.equals("Spanish") || language.equals("Español")
+                ? intercompanyApprovesLink : intercompanyApprovalsEnglishLink;
+        String locator2 = language.equals("Spanish") || language.equals("Español")
+                ? "a[title=\""+company.substring(0,3)+complement+"\"]" : "a[title=\""+company.substring(0,3)+" TS Requests\"]";
+
+        $(locator1).click();
+        click(locator2,false);
+
+        if (company.equals("CWPPA") || company.equals("LNPPA"))
+            return new TimeSheetRequestPAPage();
+        else
+            return new TimeSheetRequestInternationalPage();
     }
 
     public TimeSheetRequestPage navigateIntercompanyOvertime(String language, String company){
@@ -156,10 +161,6 @@ public class HomePage {
         $(timesheetHistoryLink).click();
     }
 
-    public TimeSheetRequestPAPage navigateRequestPA(String language, String company){
-        $("a[title=\"Solicitud de Horas Extras\"]").click();
-        return new TimeSheetRequestPAPage();
-    }
 
     //Colombia Menu
     public TimeSheetRequestPage navigateRequest(String language, String company){
@@ -185,7 +186,7 @@ public class HomePage {
         return null;
     }
 
-    public TimeSheetRequestPage navigateIntercompanyHistoricInternational(String language){
+    public TimeSheetRequestPage navigateIntercompanyHistoricInternational(String language, String company){
         if (language.equals("Spanish") || language.equals("Español")){
             $(intercompanyApprovesLink).click();
             $(approveHistoricLink).click();
@@ -197,7 +198,11 @@ public class HomePage {
             else
                 $$(approveHistoricEnglishLink).get(0).click();
         }
-        return new TimeSheetRequestInternationalPage();
+
+        if (company.equals("CWPPA") || company.equals("LNPPA"))
+            return new TimeSheetRequestPAPage();
+        else
+            return new TimeSheetRequestInternationalPage();
 
     }
 
@@ -214,6 +219,30 @@ public class HomePage {
 
     }
 
+    //Panama Menu
+    public TimeSheetRequestPAPage navigateRequestPA(String language, String company){
+        $("a[title=\"Solicitud de Horas Extras\"]").click();
+        return new TimeSheetRequestPAPage();
+    }
+
+    public TimeSheetRequestPAPage navigateApprovalsPA(String language, boolean isNewRequest){
+        String locator1 = language.equals("Spanish") || language.equals("Español")
+                ? "a[title=\"Aprobaciones\"]" : "a[title=\"Approvals\"]";
+        String locator2 = language.equals("Spanish") || language.equals("Español")
+                ? "a[title=\"Aprobación de Horas Extras\"]" : "a[title=\"Overtime Approvals\"]";
+        String locator3 = language.equals("Spanish") || language.equals("Español")
+                ? "a[title=\"Historial Aprobación de Horas Extras\"]" : "a[title=\"Overtime Approvals History\"]";
+
+        $(locator1).click();
+        if (isNewRequest)
+            click(locator2,false);
+        else
+            click(locator3,false);
+
+        return new TimeSheetRequestPAPage();
+    }
+
+
     //Jamaica Menu
     public TimeSheetRequestJMPage navigateRequestJM(String requestType, boolean isNewRequest){
         String subMenu = "History";
@@ -224,7 +253,7 @@ public class HomePage {
         if (requestType.equals("OR")){
             $("a[title=\"Overtime Requests\"]").click();
             locator = "//a[@title='Overtime Requests']/following-sibling::ul//a[@title='"+subMenu+"']";
-            CommonTest.click(locator,true);
+            click(locator,true);
         }
 
         if (requestType.equals("SBR")){
@@ -260,7 +289,7 @@ public class HomePage {
             $(locator1).click();
             String subMenuResult = isNewRequest ? subMenu1 : subMenu2;
             String locator2 = "//a[@title='"+menu+"']/following-sibling::ul//a[@title='"+subMenuResult+"']";
-            CommonTest.click(locator2,true);
+            click(locator2,true);
         }
         if (requestType.equals("SBR")){
             String menu = language.equals("Español") ? "Aprobaciones Standby" : "Standby Approvals";
@@ -269,7 +298,7 @@ public class HomePage {
             $(locator1).click();
             String subMenuResult = isNewRequest ? subMenu1 : subMenu2;
             String locator2 = "//a[@title='"+menu+"']/following-sibling::ul//a[@title='"+subMenuResult+"']";
-            CommonTest.click(locator2,true);
+            click(locator2,true);
         }
         if (requestType.equals("COR")){
             String menu = language.equals("Español") ? "Aprobaciones Call Out" : "Call Out Approvals";
@@ -277,7 +306,7 @@ public class HomePage {
             $(locator1).click();
             String subMenuResult = isNewRequest ? subMenu1 : subMenu2;
             String locator2 = "//a[@title='"+menu+"']/following-sibling::ul//a[@title='"+subMenuResult+"']";
-            CommonTest.click(locator2,true);
+            click(locator2,true);
         }
         if (requestType.equals("SR")){
             String menu = language.equals("Español") ? "Aprobaciones Shift" : "Shift Approvals";
@@ -285,7 +314,7 @@ public class HomePage {
             $(locator1).click();
             String subMenuResult = isNewRequest ? subMenu1 : subMenu2;
             String locator2 = "//a[@title='"+menu+"']/following-sibling::ul//a[@title='"+subMenuResult+"']";
-            CommonTest.click(locator2,true);
+            click(locator2,true);
         }
 
         return new TimeSheetRequestJMPage();
@@ -293,7 +322,7 @@ public class HomePage {
 
     public void logout(){
         Selenide.sleep(1000);
-        CommonTest.click(logoutButton,false);
+        click(logoutButton,false);
     }
 
 
