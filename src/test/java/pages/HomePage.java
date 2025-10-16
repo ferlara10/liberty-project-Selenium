@@ -259,19 +259,19 @@ public class HomePage {
         if (requestType.equals("SBR")){
             $("a[title=\"Standby Requests\"]").click();
             locator = "//a[@title='Standby Requests']/following-sibling::ul//a[@title='"+subMenu+"']";
-            $x(locator).click();
+            click(locator,true);
         }
 
         if (requestType.equals("COR")){
             $("a[title=\"Call Out Requests\"]").click();
             locator = "//a[@title='Call Out Requests']/following-sibling::ul//a[@title='"+subMenu+"']";
-            $x(locator).click();
+            click(locator,true);
         }
 
         if (requestType.equals("SR")){
             $("a[title=\"Shift Requests\"]").click();
             locator = "//a[@title='Shift Requests']/following-sibling::ul//a[@title='"+subMenu+"']";
-            $x(locator).click();
+            click(locator,true);
         }
 
         return new TimeSheetRequestJMPage();
