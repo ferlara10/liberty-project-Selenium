@@ -15,24 +15,15 @@ import static com.codeborne.selenide.Condition.enabled;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.*;
 import static suites.utils.CommonTest.clickNoWait;
+import static suites.utils.CommonTest.getReasonByValue;
 
 public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
 
     private String jornalInput = "#Jornal";
-    private String scheduleInput = "#Schedule";
 
-    private String time1Input = "#Time";
-    private String time1endInput = "#OutTime";
-    private String time2Input = "#Time2";
-    private String time2endInput = "#OutTime2";
-    private String time3Input = "#Time3";
-    private String time3endInput = "#OutTime3";
-
-    private By option1Checkbox = By.cssSelector( "label[for='DayOpt1']");
     private By option2Checkbox = By.cssSelector("label[for='DayOpt2']");
     private By option3Checkbox = By.cssSelector("label[for='DayOpt3']");
 
-    private String reasonSelect = "#Reason";
     private String lunchSelect = "#Lunch";
 
 
@@ -44,29 +35,29 @@ public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
         $(jornalInput).shouldBe(visible,enabled).selectOptionByValue(journal);
 
         Selenide.sleep(2000);
-        $(scheduleInput).selectOptionByValue(request.getSchedule());
+        $(getScheduleInput()).selectOptionByValue(request.getSchedule());
 
         if (journal.equals("3") || journal.equals("4"))
             $(lunchSelect).selectOptionByValue(request.getLunch());
 
         if (!request.getTime().isEmpty())
-            CommonTest.enterTime(request.getTime(),time1Input);
+            CommonTest.enterTime(request.getTime(),getTime1Input());
 
         if (!request.getOutTime().isEmpty())
-            CommonTest.enterTime(request.getOutTime(),time1endInput);
+            CommonTest.enterTime(request.getOutTime(),getTime1endInput());
 
         if (!request.getTime2().isEmpty())
-            CommonTest.enterTime(request.getTime2(),time2Input);
+            CommonTest.enterTime(request.getTime2(),getTime2Input());
         if (!request.getOutTime2().isEmpty())
-            CommonTest.enterTime(request.getOutTime2(),time2endInput);
+            CommonTest.enterTime(request.getOutTime2(),getTime2endInput());
 
         if (!request.getTime3().isEmpty())
-            CommonTest.enterTime(request.getTime3(),time3Input);
+            CommonTest.enterTime(request.getTime3(),getTime3Input());
         if (!request.getOutTime3().isEmpty())
-            CommonTest.enterTime(request.getOutTime3(),time3endInput);
+            CommonTest.enterTime(request.getOutTime3(),getTime3endInput());
 
         if (request.getDayOpt1().equals("1"))
-            clickNoWait(option1Checkbox);
+            clickNoWait(getOption1Checkbox());
 
         if (request.getDayOpt2().equals("1"))
             clickNoWait(option2Checkbox);
@@ -74,10 +65,10 @@ public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
         if (request.getDayOpt3().equals("1"))
             clickNoWait(option3Checkbox);
 
-        String reason = getReasonByValue(reasonSelect, request.getReason());
+        String reason =  getReasonByValue(getReasonSelect(), request.getReason());
         if (reason.equals("null"))
             throw new AssertionError("Reason: " +request.getReason()+" is not present in this company.");
-        $(reasonSelect).selectOptionByValue(reason);
+        $(getReasonSelect()).selectOptionByValue(reason);
         $(getCommentLocator()).setValue("testing");
         CommonTest.uploadDummyFile(getAttachFileLocator());
 
@@ -106,16 +97,19 @@ public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
         }
     }
 
-    public void approvePARequest(IPanama request, String status, String id, String language){
+    public boolean approvePARequest(IPanama request, String status, String id, String language){
+        boolean result = false;
         SelenideElement row = searchPADynamic(request,status, language, id);
         if (row.exists()){
             int index = getHeaderIndex("Actions","Acciones",null,$$(getHeaderTable()));
             SelenideElement column = row.$$("td").get(index);
             column.$x(".//img[contains(@src,'icon_Approve.gif')]").click();
             CommonTest.clickModal(".//button[@id='modal_portalconfirm_btn0']");
+            result = true;
         }else{
             Assert.fail("Was not possible to find the request and approve it");
         }
+        return result;
     }
 
     public void reversePARequest(IPanama request, String status, String oneId, String language){
@@ -175,18 +169,6 @@ public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
             }
         }
         return null;
-    }
-
-    public String getReasonByValue(String selectLocator, String reason){
-
-        // Extract all option values
-        List<String> values = $(selectLocator).$$x(".//option").attributes("value");
-        int leng = reason.length();
-        for (String value : values){
-            if (!value.isEmpty() && value.substring(0,leng).equals(reason))
-                return value;
-        }
-        return "null";
     }
 
 }

@@ -11,8 +11,8 @@ import org.testng.Assert;
 import org.testng.annotations.*;
 import pages.HomePage;
 import pages.LoginPage;
-import pages.pa.TimeSheetRequestPAPage;
-import pojo.IPanama;
+import pages.cr.TimeSheetRequestCRPage;
+import pojo.ICostaRica;
 import suites.utils.CommonTest;
 
 import java.io.File;
@@ -22,7 +22,7 @@ import java.util.Objects;
 
 import static io.qameta.allure.Allure.step;
 
-public class HoursPanamaSuite {
+public class HoursCostaRicaSuite {
 
     private static Object[][] cachedData;
     private String apiURL;
@@ -35,8 +35,9 @@ public class HoursPanamaSuite {
     private JSONObject managerInformation = null;
     private String managerPassword = "";
 
-    private String scenariosTable = "TEST_LLA-PA_Hours";
+    private String scenariosTable = "TEST_LLA-CR_Hours";
     private String oneID = "";
+
 
     @BeforeSuite
     @Parameters({"baseUrlParam", "apiEnvParam", "globalUserParam", "globalPassParam"})
@@ -52,7 +53,7 @@ public class HoursPanamaSuite {
             CommonTest commonTest = new CommonTest(apiEnv,this.globalUser,this.globalPass);
             this.apiURL = commonTest.getAPIURL();
             authToken = commonTest.getToken();
-            cachedData = commonTest.getScenarios(this.authToken,this.scenariosTable,"","PA");
+            cachedData = commonTest.getScenarios(this.authToken,this.scenariosTable,"","CR");
             System.out.println("finish fetch data...");
         }
     }
@@ -68,11 +69,11 @@ public class HoursPanamaSuite {
     @DataProvider(name = "jsonData")
     public Object[][] dataProviderJSON() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        List<IPanama> dataList = mapper.readValue(new File(
+        List<ICostaRica> dataList = mapper.readValue(new File(
                 Objects.requireNonNull(
-                        getClass().getClassLoader().getResource("dataCWPPA.json")
+                        getClass().getClassLoader().getResource("dataJamaica.json")
                 ).getFile()
-        ), new TypeReference<List<IPanama>>() {});
+        ), new TypeReference<List<ICostaRica>>() {});
 
         Object[][] dataArray = new Object[dataList.size()][1];
         for (int i = 0; i < dataList.size(); i++) {
@@ -81,13 +82,13 @@ public class HoursPanamaSuite {
         return dataArray;
     }
 
-    @DataProvider(name = "panamaScenarios")
-    public Object[][] dataProviderColombia(){
+    @DataProvider(name = "costaRicaScenarios")
+    public Object[][] dataProviderCostaRica(){
         return cachedData;
     }
 
-    @Test(dataProvider = "panamaScenarios")
-    public void hoursFlow(IPanama scenario) throws IOException {
+    @Test(dataProvider = "costaRicaScenarios")
+    public void hoursFlow(ICostaRica scenario) throws IOException {
         System.out.println("-->> Test initialized ");
 
         step("Send the Request"+" - Company: "+scenario.getCompany()+" - Employee: "+scenario.getEmployee(), () -> {
@@ -99,7 +100,7 @@ public class HoursPanamaSuite {
         step("Report", () -> {
             reportResults(this.scenariosTable,scenario);
         });
-        step("Revert Request", () -> {
+        step("Revert Request: " + scenario.getEmployee(), () -> {
             revertRequest(scenario.getCompany(), scenario);
         });
         step("Delete Request", () -> {
@@ -109,7 +110,7 @@ public class HoursPanamaSuite {
         System.out.println("Finish test case...");
     }
 
-    public void sendRequest(IPanama scenario){
+    public void sendRequest(ICostaRica scenario){
         try{
             LoginPage loginPage = new LoginPage();
             loginPage.navigate(this.baseURL+scenario.getCompany()+"/");
@@ -119,11 +120,10 @@ public class HoursPanamaSuite {
             this.oneID = loginPage.getOneID();
 
             boolean requestExist = false;
-            TimeSheetRequestPAPage requestPage =
-                    (TimeSheetRequestPAPage) homePage.navigateRequestPA(language,scenario.getCompany());
+            TimeSheetRequestCRPage requestPage = homePage.navigateRequestCR(language,scenario.getCompany());
             requestPage.addTimesheetRequest(scenario);
             String status = language.equals("English") ? "Escalated" : "Escalado";
-            requestExist = requestPage.verifyRequestPAExist(scenario,status,language,this.oneID);
+            requestExist = requestPage.verifyRequestCRExist(scenario,status,language,this.oneID);
             Assert.assertTrue(requestExist, "Don't able to find the request ");
             homePage.logout();
             System.out.println("Step 1 - send request");
@@ -135,7 +135,7 @@ public class HoursPanamaSuite {
         }
     }
 
-    public void approveRequest(String employee, String company, IPanama scenario) throws IOException {
+    public void approveRequest(String employee, String company, ICostaRica scenario) throws IOException {
 
         String managerCompany = "";
         String managerEmployee = "";
@@ -157,14 +157,14 @@ public class HoursPanamaSuite {
             isLoggedin = true;
             String status = language.equals("English") ? "Pending" : "Pendiente";
 
-            TimeSheetRequestPAPage requestPage;
+            TimeSheetRequestCRPage requestPage;
             if (company.equals(managerCompany))     //TODO - Same company scenario
-                requestPage = homePage.navigateApprovalsPA(language, true);
+                requestPage = homePage.navigateApprovalsCR(language, true);
             else                                    //TODO - Multicompany scenario
-                requestPage = (TimeSheetRequestPAPage) homePage.navigateIntercompanyOvertimeInternational(language,company,managerCompany);
+                requestPage = (TimeSheetRequestCRPage) homePage.navigateIntercompanyOvertimeInternational(language,company,managerCompany);
 
-            isRequestApproved = requestPage.approvePARequest(scenario, status, this.oneID, language);
-            boolean requestExist = requestPage.verifyRequestPAExist(scenario, status, language, this.oneID);
+            isRequestApproved = requestPage.approveCRRequest(scenario, status, this.oneID, language);
+            boolean requestExist = requestPage.verifyRequestCRExist(scenario, status, language, this.oneID);
             homePage.logout();
             Assert.assertFalse(requestExist, "I found a request. it's not supposed to be there");
 
@@ -182,7 +182,7 @@ public class HoursPanamaSuite {
 
     }
 
-    public void revertRequest(String company, IPanama scenario){
+    public void revertRequest(String company, ICostaRica scenario){
 
         try{
             LoginPage loginPage = new LoginPage();
@@ -194,14 +194,14 @@ public class HoursPanamaSuite {
             HomePage homePage = loginPage.login(managerEmployee, this.managerPassword, "" );
 
             String status = language.equals("English") ? "Approved" : "Completado";
-            TimeSheetRequestPAPage requestPage;
+            TimeSheetRequestCRPage requestPage;
             if (company.equals(managerCompany))         //TODO - Same company scenario
-                requestPage = homePage.navigateApprovalsPA(language, false);
+                requestPage = homePage.navigateApprovalsCR(language, false);
             else                                        //TODO - Multicompany scenario
-                requestPage = (TimeSheetRequestPAPage) homePage.navigateIntercompanyHistoricInternational(language, company);
+                requestPage = (TimeSheetRequestCRPage) homePage.navigateIntercompanyHistoricInternational(language, company);
 
-            requestPage.reversePARequest(scenario, status, this.oneID, language);
-            boolean requestExist = requestPage.verifyRequestPAExist(scenario,status, language,this.oneID);
+            requestPage.reverseCRRequest(scenario, status, this.oneID, language);
+            boolean requestExist = requestPage.verifyRequestCRExist(scenario,status, language,this.oneID);
             Assert.assertFalse(requestExist, "Don't able to find the request ");
             homePage.logout();
         }catch(AssertionError e){
@@ -212,7 +212,7 @@ public class HoursPanamaSuite {
         System.out.println("Step 3 - revert");
     }
 
-    public void deleteRequest(IPanama scenario){
+    public void deleteRequest(ICostaRica scenario){
 
         try{
             LoginPage loginPage = new LoginPage();
@@ -221,12 +221,11 @@ public class HoursPanamaSuite {
             HomePage homePage = loginPage.login(scenario.getEmployee(), this.employeePassword, "" );
 
             boolean requestExist = false;
+            TimeSheetRequestCRPage requestPage = homePage.navigateRequestCR(language,scenario.getCompany());
 
-            TimeSheetRequestPAPage requestPage =
-                    (TimeSheetRequestPAPage) homePage.navigateRequestPA(language,scenario.getCompany());
             String status = language.equals("English") ? "Escalated" : "Escalado";
             requestPage.deleteTimesheetRequest(scenario,status, language, this.oneID);
-            requestExist = requestPage.verifyRequestPAExist(scenario, status, language, this.oneID);
+            requestExist = requestPage.verifyRequestCRExist(scenario, status, language, this.oneID);
 
             Assert.assertFalse(requestExist, "Don't able to find the request ");
             homePage.logout();
@@ -239,7 +238,7 @@ public class HoursPanamaSuite {
 
     }
 
-    public void reportResults(String table, IPanama scenario) throws IOException {
+    public void reportResults(String table, ICostaRica scenario) throws IOException {
         JSONObject data = CommonTest.getResult(this.apiURL, this.globalUser, this.authToken, this.scenariosTable,
                 scenario.getCompany(), scenario.getScenario(), scenario.getEmployee(),
                 scenario.getDateBeg(), scenario.getDateBeg());

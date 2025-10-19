@@ -106,7 +106,8 @@ public class HomePage {
         String complement = "";
         if (managerCompany.equals("LNSSV") || managerCompany.equals("LLACO") ||
             managerCompany.equals("LNGGT") || managerCompany.equals("CNDDO") ||
-            managerCompany.equals("TTCCR") || managerCompany.equals("LNHHN"))                                         //TODO - Could be necessary to add more companies
+            managerCompany.equals("TTCCR") || managerCompany.equals("CNCCR") ||
+                managerCompany.equals("CNWCR") || managerCompany.equals("TISCR") || managerCompany.equals("LNHHN"))                                         //TODO - Could be necessary to add more companies
             complement = " Horas";
         else
             complement = " Horas Extras";
@@ -121,6 +122,8 @@ public class HomePage {
 
         if (company.equals("CWPPA") || company.equals("LNPPA"))
             return new TimeSheetRequestPAPage();
+        if (company.equals("TTCCR") || company.equals("CNCCR") || company.equals("CNWCR") || company.equals("TISCR"))
+            return new TimeSheetRequestCRPage();
         else
             return new TimeSheetRequestInternationalPage();
     }
@@ -201,6 +204,8 @@ public class HomePage {
 
         if (company.equals("CWPPA") || company.equals("LNPPA"))
             return new TimeSheetRequestPAPage();
+        if (company.equals("TTCCR") || company.equals("CNCCR") || company.equals("CNWCR") || company.equals("TISCR"))
+            return new TimeSheetRequestCRPage();
         else
             return new TimeSheetRequestInternationalPage();
 
@@ -242,6 +247,28 @@ public class HomePage {
         return new TimeSheetRequestPAPage();
     }
 
+    //Costa Rica
+    public TimeSheetRequestCRPage navigateRequestCR(String language, String company){
+        click("a[title=\"Solicitud de Horas Extras\"]",false);
+        return new TimeSheetRequestCRPage();
+    }
+
+    public TimeSheetRequestCRPage navigateApprovalsCR(String language, boolean isNewRequest){
+        String locator1 = language.equals("Spanish") || language.equals("Español")
+                ? "a[title=\"Aprobaciones\"]" : "a[title=\"Approvals\"]";
+        String locator2 = language.equals("Spanish") || language.equals("Español")
+                ? "a[title=\"Aprobación de Horas Extras\"]" : "a[title=\"Overtime Approvals\"]";
+        String locator3 = language.equals("Spanish") || language.equals("Español")
+                ? "a[title=\"Historial Aprobación de Horas Extras\"]" : "a[title=\"Overtime Approvals History\"]";
+
+        $(locator1).click();
+        if (isNewRequest)
+            click(locator2,false);
+        else
+            click(locator3,false);
+
+        return new TimeSheetRequestCRPage();
+    }
 
     //Jamaica Menu
     public TimeSheetRequestJMPage navigateRequestJM(String requestType, boolean isNewRequest){

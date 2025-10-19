@@ -4,6 +4,7 @@ import com.codeborne.selenide.CollectionCondition;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
+import org.openqa.selenium.By;
 import org.testng.Assert;
 import pojo.IColombia;
 import suites.utils.CommonTest;
@@ -30,6 +31,19 @@ public class TimeSheetRequestPage {
     private String initialHourInput = "#Time";
     private String endHourInput = "#OutTime";
     private String reasonSelect = "#Reason";
+
+    //Panama and CostaRica
+    private String scheduleInput = "#Schedule";
+
+    private String time1Input = "#Time";
+    private String time1endInput = "#OutTime";
+    private String time2Input = "#Time2";
+    private String time2endInput = "#OutTime2";
+    private String time3Input = "#Time3";
+    private String time3endInput = "#OutTime3";
+
+    private By option1Checkbox = By.cssSelector( "label[for='DayOpt1']");
+
 
     public void addRequest(){
         CommonTest.click(addButton,false);
@@ -81,6 +95,38 @@ public class TimeSheetRequestPage {
 
     public String getReasonSelect() {
         return reasonSelect;
+    }
+
+    public String getScheduleInput() {
+        return scheduleInput;
+    }
+
+    public String getTime1Input() {
+        return time1Input;
+    }
+
+    public String getTime1endInput() {
+        return time1endInput;
+    }
+
+    public String getTime2Input() {
+        return time2Input;
+    }
+
+    public String getTime2endInput() {
+        return time2endInput;
+    }
+
+    public String getTime3Input() {
+        return time3Input;
+    }
+
+    public String getTime3endInput() {
+        return time3endInput;
+    }
+
+    public By getOption1Checkbox() {
+        return option1Checkbox;
     }
 
     public HashMap<String, Integer> getHeadersIndex(ElementsCollection header){

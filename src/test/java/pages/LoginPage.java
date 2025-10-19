@@ -1,6 +1,7 @@
 package pages;
 
 import com.codeborne.selenide.Selenide;
+import org.json.JSONException;
 import org.json.JSONObject;
 import suites.utils.CommonTest;
 
@@ -44,8 +45,14 @@ public class LoginPage {
         String passURL = String.format("%s/dt_testermanager/?user=%s&token=%s&company=%s&employee=%s",
                 baseURL, user, token, company, employee);
 
-        JSONObject data = CommonTest.getJsonObject(passURL).getJSONArray("data").getJSONObject(0);
-        return data;
+        JSONObject response = CommonTest.getJsonObject(passURL);
+        try{
+            return response.getJSONArray("data").getJSONObject(0);
+        }catch (JSONException e){
+            System.out.println("I found an error in the API: "+response.get("status_msg"));
+            throw new IOException("I found an error in the API: "+response.get("status_msg"));
+        }
+
     }
 
     public String getOneID(){

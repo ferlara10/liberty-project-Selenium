@@ -1,36 +1,90 @@
 package pages.cr;
 
-import com.codeborne.selenide.CollectionCondition;
-import com.codeborne.selenide.ElementsCollection;
-import com.codeborne.selenide.Selenide;
-import com.codeborne.selenide.SelenideElement;
+import com.codeborne.selenide.*;
 import org.testng.Assert;
 import pages.TimeSheetRequestPage;
-import pojo.IColombia;
+import pojo.ICostaRica;
 import suites.utils.CommonTest;
 
+import java.io.IOException;
 import java.util.HashMap;
 
+import static com.codeborne.selenide.Condition.visible;
+import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
+import static suites.utils.CommonTest.*;
 
 public class TimeSheetRequestCRPage extends TimeSheetRequestPage {
 
-    public void denyRequest(IColombia request){
-        SelenideElement row = searchRequestCO(request, "Pendiente");
-        if (row.exists()){
-            SelenideElement column = row.$$("td").get(14);
-            column.$x(".//img[contains(@src,'icon_Reject.gif')]").click();
-            //Selenide.sleep(2000);
-            CommonTest.clickModal(".//button[@id='modal_portalconfirm_btn0']");
-        }else{
-            Assert.fail("Was not possible to find the request and delete it");
+    public void addTimesheetRequest(ICostaRica request) throws IOException {
+        this.addRequest();
+        //fill the form
+
+        Selenide.sleep(1000);
+        $(getScheduleInput()).selectOptionByValue(request.getSchedule());
+
+        if (!request.getTime().isEmpty())
+            CommonTest.enterTime(request.getTime(), getTime1Input());
+
+        if (!request.getOutTime().isEmpty())
+            CommonTest.enterTime(request.getOutTime(), getTime1endInput());
+
+        if (!request.getTime2().isEmpty())
+            CommonTest.enterTime(request.getTime2(), getTime2Input());
+        if (!request.getOutTime2().isEmpty())
+            CommonTest.enterTime(request.getOutTime2(), getTime2endInput());
+
+        if (!request.getTime3().isEmpty())
+            CommonTest.enterTime(request.getTime3(), getTime3Input());
+        if (!request.getOutTime3().isEmpty())
+            CommonTest.enterTime(request.getOutTime3(), getTime3endInput());
+
+        if (request.getDayOpt1().equals("1"))
+            clickNoWait(getOption1Checkbox());
+
+        String reason = getReasonByValue(getReasonSelect(), request.getReason());
+        if (reason.equals("null"))
+            throw new AssertionError("Reason: " +request.getReason()+" is not present in this company.");
+        $(getReasonSelect()).selectOptionByValue(reason);
+
+        $(getCommentLocator()).setValue("testing");
+        CommonTest.uploadDummyFile(getAttachFileLocator());
+
+        //needs to be there because is hidden other elements
+        String date = CommonTest.convertDate(request.getDateBeg(),"S");
+        $(getDateInputLocator()).setValue(date);
+
+        //$(getSendButtonLocator()).click();
+        click(getSendButtonLocator(),false);
+        try{
+            $(this.getAddButton()).shouldBe(visible).should(Condition.clickable);
+        }catch (AssertionError e){
+            String message = CommonTest.clickModal("//div[@class='modal-footer']//button[text()='Cerrar']");
+            throw new AssertionError("I found an error message: "+message);
         }
     }
 
-    public void reverseRequest(IColombia request){
-        SelenideElement row = searchHistoric(request, "Completado");
+    public boolean approveCRRequest(ICostaRica request, String status, String id, String language){
+        boolean result = false;
+        SelenideElement row = searchCRDynamic(request,status, language, id);
         if (row.exists()){
-            SelenideElement column = row.$$("td").get(8);
+            int index = getHeaderIndex("Actions","Acciones",null,$$(getHeaderTable()));
+            SelenideElement column = row.$$("td").get(index);
+            column.$x(".//img[contains(@src,'icon_Approve.gif')]").click();
+            CommonTest.clickModal(".//button[@id='modal_portalconfirm_btn0']");
+            result = true;
+        }else{
+            Assert.fail("Was not possible to find the request and approve it");
+        }
+        return result;
+    }
+
+    public void reverseCRRequest(ICostaRica request, String status, String oneId, String language){
+        SelenideElement row = searchCRDynamic(request, status, language, oneId);
+        ElementsCollection headers = $$(getHeaderTable());
+        if (row.exists()){
+            int index = getHeaderIndex("Reverse","Reversar","Rev.",headers);
+            SelenideElement column = row.$$("td").get(index);
             column.$x(".//img[contains(@src,'arrow-left.gif')]").click();
             CommonTest.clickModal(".//button[@id='modal_portalconfirm_btn0']");
         }else{
@@ -38,69 +92,26 @@ public class TimeSheetRequestCRPage extends TimeSheetRequestPage {
         }
     }
 
-    public void approveRequest(IColombia request, String id){
-        SelenideElement row2 = searchDynamic(request,"Pendiente",id);
-        SelenideElement row = searchRequestCO(request, "Pendiente");
+
+    public void deleteTimesheetRequest(ICostaRica request, String status, String language, String oneId){
+        SelenideElement row = searchCRDynamic(request, status, language, oneId);
         if (row.exists()){
-            SelenideElement column = row.$$("td").get(14);
-            column.$x(".//img[contains(@src,'icon_Approve.gif')]").click();
-            CommonTest.clickModal(".//button[@id='modal_portalconfirm_btn0']");
+            int index = getHeaderIndex("Action", "Acción",null,$$(getHeaderTable()));
+            SelenideElement column = row.$$("td").get(index);
+            column.$x(".//a[img[@title='Delete' or @title='Borrar']]").click();
+            CommonTest.clickModal("//*[@id=\"modal_portalconfirm_btn0\"]");
         }else{
-            Assert.fail("Was not possible to find the request and approve it");
+            Assert.fail("Was not possible to find the request and delete it");
         }
     }
 
-    public boolean verifyRequestExist(IColombia request){
-        SelenideElement row = searchRequestCO(request, "Pendiente");
+
+    public boolean verifyRequestCRExist(ICostaRica request, String status, String language, String oneId){
+        SelenideElement row = searchCRDynamic(request, status, language, oneId);
         return row != null;
     }
 
-    public boolean verifyHistoric(IColombia request){
-        SelenideElement row = searchHistoric(request, "Completado");
-        return row != null;
-    }
-
-    public HashMap<String, Integer> getHeadersIndexSpanish(ElementsCollection header){
-        HashMap<String, Integer> result = new HashMap<String, Integer>();;
-        for(int i=0; i < header.size() ;i++){
-            String name = header.get(i).getText();
-            if (name.equals("OneID"))
-                result.put("OneID",i);
-            if (name.equals("Fecha"))
-                result.put("Fecha", i);
-            if (name.equals("Intervalo"))
-                result.put("Intervalo", i);
-            if (name.equals("Estado"))
-                result.put("Estado", i);
-            if (name.equals("Acciones"))
-                result.put("Acciones", i);
-            if (name.equals("F. Solicitud"))
-                result.put("F. Solicitud", i);
-        }
-        return result;
-    }
-
-    public HashMap<String, Integer> getHeadersIndexEnglish(ElementsCollection header){
-        HashMap<String, Integer> result = new HashMap<String, Integer>();;
-        for(int i=0; i < header.size() ;i++){
-            String name = header.get(i).getText();
-            if (name.equals("OneID"))
-                result.put("OneID",i);
-            if (name.equals("Date"))
-                result.put("Date", i);
-            if (name.equals("Interval"))
-                result.put("Interval", i);
-            if (name.equals("Status"))
-                result.put("Status", i);
-            if (name.equals("Actions"))
-                result.put("Actions", i);
-            if (name.equals("Request Date"))
-                result.put("Request Date", i);
-        }
-        return result;
-    }
-
-    public SelenideElement searchDynamic(IColombia request, String requestStatus, String id){
+    public SelenideElement searchCRDynamic(ICostaRica request, String requestStatus, String language, String oneId){
         Selenide.sleep(1000);
         String table = ".table tbody tr";
         String header = ".table thead th";
@@ -109,87 +120,30 @@ public class TimeSheetRequestCRPage extends TimeSheetRequestPage {
             return null;
         $$(table).shouldHave(CollectionCondition.sizeGreaterThan(0));
         ElementsCollection rows = $$(table);
-        HashMap<String, Integer> columns = getHeadersIndexSpanish($$(header));
+        HashMap<String, Integer> columns = this.getHeadersIndex($$(header));
+
         for(int i=0; i < rows.size() ;i++){
             ElementsCollection cells = rows.get(i).$$("td");
-            String dateCell = cells.get(columns.get("Fecha")).getText();               //getting text of the date column
-            String convertedDate = CommonTest.convertDate(request.getDateBeg(),"S");
+            String dateCell = cells.get(columns.get("Date")).getText();
+            String convertedDate = CommonTest.getDateBaseOnLanguage(language,request.getDateBeg());
+
             if (dateCell.equals(convertedDate)){
+
+                //String intervalUI = CommonTest.getInterval(request.getTime(), request.getOutTime(), request.getOutTime2(), request.getOutTime3());
+                String dateConverted = CommonTest.getDateBaseOnLanguage(language,request.getDateBeg());
 
                 String oneID = cells.get(columns.get("OneID")).getText();
+                String requestDate = cells.get(columns.get("Date")).getText();
+                //String interval = cells.get(columns.get("Interval")).getText();
+                String status = cells.get(columns.get("Status")).getText();
+                String enterDate = cells.get(columns.get("Request Date")).getText();
+                String todayDate = "";
+                if (language.equals("Spanish") || language.equals("Español"))
+                    todayDate = CommonTest.getTodayDate();
+                else
+                    todayDate = CommonTest.getTodayDateEnglish();
 
-                String requestDate = cells.get(columns.get("Fecha")).getText();
-                String interval = cells.get(columns.get("Intervalo")).getText();
-                String status = cells.get(columns.get("Estado")).getText();
-                String enterDate = cells.get(columns.get("F. Solicitud")).getText();
-                String todayDate = CommonTest.getTodayDate();
-
-                String dateConverted = CommonTest.convertDate(request.getDateBeg(),"S");
-
-                if (dateConverted.equals(requestDate) && interval.equals(String.format("%s - %s",request.getTime(),request.getOutTime()))
-                        && enterDate.equals(todayDate) && status.equals(requestStatus)
-                        && oneID.equals(id)){
-                    return rows.get(i);
-                }
-            }
-        }
-        return null;
-    }
-
-    public SelenideElement searchHistoric(IColombia request, String requestStatus){
-        Selenide.sleep(1000);
-        String table = ".table tbody tr";
-        if (!$$(table).first().exists())
-            return null;
-        $$(table).shouldHave(CollectionCondition.sizeGreaterThan(0));
-        ElementsCollection rows = $$(table);
-
-        for(int i=0; i < rows.size() ;i++){
-            ElementsCollection cells = rows.get(i).$$("td");
-            String dateCell = cells.get(3).getText();               //getting text of the date column
-            String convertedDate = CommonTest.convertDate(request.getDateBeg(),"S");
-            if (dateCell.equals(convertedDate)){
-
-                String requestDate = cells.get(3).getText();
-                String interval = cells.get(4).getText();
-                String status = cells.get(7).getText();
-                String enterDate = cells.get(10).getText();
-                String todayDate = CommonTest.getTodayDate();
-
-                String dateConverted = CommonTest.convertDate(request.getDateBeg(),"S");
-
-                if (dateConverted.equals(requestDate) && interval.equals(String.format("%s - %s",request.getTime(),request.getOutTime()))
-                        && enterDate.equals(todayDate) && status.equals(requestStatus)){
-                    return rows.get(i);
-                }
-            }
-        }
-        return null;
-    }
-
-    public SelenideElement searchRequestCO(IColombia request, String requestStatus){
-        Selenide.sleep(1000);
-        String table = ".table tbody tr";
-        if (!$$(table).first().exists())
-            return null;
-        $$(table).shouldHave(CollectionCondition.sizeGreaterThan(0));
-        ElementsCollection rows = $$(table);
-
-        for(int i=0; i < rows.size() ;i++){
-            ElementsCollection cells = rows.get(i).$$("td");
-            String dateCell = cells.get(3).getText();               //getting text of the date column
-            String convertedDate = CommonTest.convertDate(request.getDateBeg(),"S");
-            if (dateCell.equals(convertedDate)){
-
-                String requestDate = cells.get(3).getText();
-                String interval = cells.get(4).getText();
-                String status = cells.get(13).getText();
-                String enterDate = cells.get(17).getText();
-                String todayDate = CommonTest.getTodayDate();
-
-                String dateConverted = CommonTest.convertDate(request.getDateBeg(),"S");
-
-                if (dateConverted.equals(requestDate) && interval.equals(String.format("%s - %s",request.getTime(),request.getOutTime()))
+                if (requestDate.equals(dateConverted) && oneID.contains(oneId)
                         && enterDate.equals(todayDate) && status.equals(requestStatus)){
                     return rows.get(i);
                 }

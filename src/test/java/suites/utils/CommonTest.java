@@ -5,24 +5,19 @@ import com.codeborne.selenide.Selenide;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.openqa.selenium.By;
-import pojo.IColombia;
+import pojo.*;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import pojo.IInternational;
-import pojo.IJamaica;
-import pojo.IPanama;
 
 import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 import static com.codeborne.selenide.Selenide.*;
@@ -67,9 +62,10 @@ public class CommonTest {
         Object [] dataArray;
         switch (branch){
             case "CO": dataArray = mapper.readValue(a, IColombia[].class);      break;
-            case "PA": dataArray = mapper.readValue(a, IPanama[].class);      break;
+            case "PA": dataArray = mapper.readValue(a, IPanama[].class);        break;
             case "XX": dataArray = mapper.readValue(a, IInternational[].class); break;
-            case "JM": dataArray = mapper.readValue(a, IJamaica[].class); break;
+            case "JM": dataArray = mapper.readValue(a, IJamaica[].class);       break;
+            case "CR": dataArray = mapper.readValue(a, ICostaRica[].class);     break;
             default: dataArray = mapper.readValue(a, IColombia[].class);
         }
         Object[][] testData = new Object[dataArray.length][1];
@@ -81,11 +77,20 @@ public class CommonTest {
     }
 
     public static JSONObject getJsonObject(String URL) throws IOException {
+
         URL url = new URL(URL);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
+        int status = conn.getResponseCode();
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        InputStream stream;
+        if (status >= 200 && status < 300) {
+            stream = conn.getInputStream();
+        } else {
+            stream = conn.getErrorStream();
+        }
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(stream));
         StringBuilder response = new StringBuilder();
         String inputLine;
         while ((inputLine = in.readLine()) != null) {
@@ -209,6 +214,17 @@ public class CommonTest {
                 result.put("Action", i);
         }
         return result;
+    }
+
+    public static String getReasonByValue(String selectLocator, String reason){
+        // Extract all option values
+        List<String> values = $(selectLocator).$$x(".//option").attributes("value");
+        int leng = reason.length();
+        for (String value : values){
+            if (!value.isEmpty() && value.substring(0,leng).equals(reason))
+                return value;
+        }
+        return "null";
     }
 
 }
