@@ -86,7 +86,7 @@ public class HoursPanamaSuite {
         return cachedData;
     }
 
-    @Test(dataProvider = "panamaScenarios")
+    @Test(dataProvider = "jsonData")
     public void hoursFlow(IPanama scenario) throws IOException {
         System.out.println("-->> Test initialized ");
 
