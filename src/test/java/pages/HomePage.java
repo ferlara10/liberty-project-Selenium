@@ -10,6 +10,7 @@ import pages.pa.TimeSheetRequestPAPage;
 
 import static com.codeborne.selenide.Selenide.*;
 import static suites.utils.CommonTest.click;
+import static suites.utils.CommonTest.waitForPageToLoad;
 
 public class HomePage {
 
@@ -201,7 +202,7 @@ public class HomePage {
             else
                 $$(approveHistoricEnglishLink).get(0).click();
         }
-
+        waitForPageToLoad();
         if (company.equals("CWPPA") || company.equals("LNPPA"))
             return new TimeSheetRequestPAPage();
         if (company.equals("TTCCR") || company.equals("CNCCR") || company.equals("CNWCR") || company.equals("TISCR"))
@@ -226,7 +227,8 @@ public class HomePage {
 
     //Panama Menu
     public TimeSheetRequestPAPage navigateRequestPA(String language, String company){
-        $("a[title=\"Solicitud de Horas Extras\"]").click();
+        //$("a[title=\"Solicitud de Horas Extras\"]").click();
+        click("a[title=\"Solicitud de Horas Extras\"]", false);
         return new TimeSheetRequestPAPage();
     }
 

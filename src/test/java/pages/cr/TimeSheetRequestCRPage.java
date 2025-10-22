@@ -9,6 +9,7 @@ import suites.utils.CommonTest;
 import java.io.IOException;
 import java.util.HashMap;
 
+import static com.codeborne.selenide.Condition.clickable;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
@@ -17,8 +18,9 @@ import static suites.utils.CommonTest.*;
 public class TimeSheetRequestCRPage extends TimeSheetRequestPage {
 
     public void addTimesheetRequest(ICostaRica request) throws IOException {
-        this.addRequest();
-        //fill the form
+
+        $(getAddButton()).shouldBe(visible).shouldBe(clickable).click();
+        $(getSendButtonLocator()).shouldBe(visible).shouldBe(clickable);
 
         Selenide.sleep(1000);
         $(getScheduleInput()).selectOptionByValue(request.getSchedule());

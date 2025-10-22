@@ -11,11 +11,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
-import static com.codeborne.selenide.Condition.enabled;
-import static com.codeborne.selenide.Condition.visible;
+import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.*;
-import static suites.utils.CommonTest.clickNoWait;
-import static suites.utils.CommonTest.getReasonByValue;
+import static suites.utils.CommonTest.*;
 
 public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
 
@@ -27,8 +25,11 @@ public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
     private String lunchSelect = "#Lunch";
 
 
-    public void addTimesheetRequest(IPanama request) throws IOException {
-        this.addRequest();
+    public boolean addTimesheetRequest(IPanama request) throws IOException {
+        boolean result = false;
+
+        $(getAddButton()).shouldBe(visible).shouldBe(clickable).click();
+        $(getSendButtonLocator()).shouldBe(visible).shouldBe(clickable);
         //fill the form
 
         String journal = request.getJornal();
@@ -76,21 +77,25 @@ public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
         String date = CommonTest.convertDate(request.getDateBeg(),"S");
         $(getDateInputLocator()).setValue(date);
 
-        $(getSendButtonLocator()).click();
+        //$(getSendButtonLocator()).click();
+        click(getSendButtonLocator(),false);
         try{
             $(this.getAddButton()).shouldBe(visible).should(Condition.clickable);
+            result = true;
         }catch (AssertionError e){
             String message = CommonTest.clickModal("//div[@class='modal-footer']//button[text()='Cerrar']");
             throw new AssertionError("I found an error message: "+message);
         }
+        return result;
     }
 
     public void deleteTimesheetRequest(IPanama request, String status, String language, String oneId){
         SelenideElement row = searchPADynamic(request, status, language, oneId);
         if (row.exists()){
-            int index = getHeaderIndex("Action", "Acción",null,$$(getHeaderTable()));
-            SelenideElement column = row.$$("td").get(index);
-            column.$x(".//a[img[@title='Delete' or @title='Borrar']]").click();
+            //int index = getHeaderIndex("Action", "Acción",null,$$(getHeaderTable()));
+            //SelenideElement column = row.$$("td").get(index);
+            //column.$x(".//a[img[@title='Delete' or @title='Borrar']]").click();
+            click(".//a[img[@title='Delete' or @title='Borrar']]", true);
             CommonTest.clickModal("//*[@id=\"modal_portalconfirm_btn0\"]");
         }else{
             Assert.fail("Was not possible to find the request and delete it");

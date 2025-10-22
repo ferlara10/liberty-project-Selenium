@@ -70,7 +70,7 @@ public class HoursPanamaSuite {
         ObjectMapper mapper = new ObjectMapper();
         List<IPanama> dataList = mapper.readValue(new File(
                 Objects.requireNonNull(
-                        getClass().getClassLoader().getResource("dataCWPPA.json")
+                        getClass().getClassLoader().getResource("errors.json")
                 ).getFile()
         ), new TypeReference<List<IPanama>>() {});
 
@@ -110,6 +110,9 @@ public class HoursPanamaSuite {
     }
 
     public void sendRequest(IPanama scenario){
+
+        boolean isRequestSent = false;
+
         try{
             LoginPage loginPage = new LoginPage();
             loginPage.navigate(this.baseURL+scenario.getCompany()+"/");
@@ -121,9 +124,13 @@ public class HoursPanamaSuite {
             boolean requestExist = false;
             TimeSheetRequestPAPage requestPage =
                     (TimeSheetRequestPAPage) homePage.navigateRequestPA(language,scenario.getCompany());
-            requestPage.addTimesheetRequest(scenario);
+            isRequestSent = requestPage.addTimesheetRequest(scenario);
             String status = language.equals("English") ? "Escalated" : "Escalado";
             requestExist = requestPage.verifyRequestPAExist(scenario,status,language,this.oneID);
+
+            if (isRequestSent && !requestExist)
+                throw new IOException("Apparently y sent the request but i didn't find it in the table");
+
             Assert.assertTrue(requestExist, "Don't able to find the request ");
             homePage.logout();
             System.out.println("Step 1 - send request");
