@@ -19,9 +19,11 @@ public class TimeSheetRequestCRPage extends TimeSheetRequestPage {
 
     public void addTimesheetRequest(ICostaRica request) throws IOException {
 
-        this.addRequest();
-        //$(getAddButton()).shouldBe(visible).shouldBe(clickable).click();
-        //$(getSendButtonLocator()).shouldBe(visible).shouldBe(clickable);
+
+        $(getAddButton()).shouldBe(visible).shouldBe(clickable);
+        $(getAddButton()).click();
+        $(getSendButtonLocator()).shouldBe(visible).shouldBe(clickable);
+        //this.addRequest();
 
         Selenide.sleep(1000);
         $(getScheduleInput()).selectOptionByValue(request.getSchedule());
