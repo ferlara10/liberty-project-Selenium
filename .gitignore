@@ -20,4 +20,3 @@ buildNumber.properties
 allure-results/
 .idea/
 .DS_Store
-src/test/resources/*.json
