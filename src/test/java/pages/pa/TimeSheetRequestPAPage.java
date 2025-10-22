@@ -131,6 +131,7 @@ public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
     }
 
     public boolean verifyRequestPAExist(IPanama request, String status, String language, String oneId){
+        Selenide.sleep(1000);
         SelenideElement row = searchPADynamic(request, status, language, oneId);
         return row != null;
     }

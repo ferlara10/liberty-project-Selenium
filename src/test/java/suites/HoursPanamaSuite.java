@@ -137,7 +137,7 @@ public class HoursPanamaSuite {
         }catch(AssertionError | IOException e){
             HomePage homePage = new HomePage();
             homePage.logout();
-            System.out.println("Step 1 - ERROR - Company: "+scenario.getCompany()+" - Employee: "+scenario.getEmployee());
+            System.out.println("Step 1 - ERROR - Company: "+scenario.getCompany()+" - Employee: "+scenario.getEmployee() + "-> "+e);
             Assert.fail(e.getMessage());
         }
     }
@@ -176,7 +176,7 @@ public class HoursPanamaSuite {
             Assert.assertFalse(requestExist, "I found a request. it's not supposed to be there");
 
         }catch(AssertionError | IOException e){
-            System.out.println("Step 2 - ERROR - Manager Company: "+managerCompany+" - Employee: "+managerEmployee);
+            System.out.println("Step 2 - ERROR - Manager Company: "+managerCompany+" - Employee: "+managerEmployee +"-> "+e);
             HomePage homePage = new HomePage();
             if (isLoggedin)
                 homePage.logout();
