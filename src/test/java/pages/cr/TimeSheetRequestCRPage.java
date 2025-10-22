@@ -19,8 +19,9 @@ public class TimeSheetRequestCRPage extends TimeSheetRequestPage {
 
     public void addTimesheetRequest(ICostaRica request) throws IOException {
 
-        $(getAddButton()).shouldBe(visible).shouldBe(clickable).click();
-        $(getSendButtonLocator()).shouldBe(visible).shouldBe(clickable);
+        this.addRequest();
+        //$(getAddButton()).shouldBe(visible).shouldBe(clickable).click();
+        //$(getSendButtonLocator()).shouldBe(visible).shouldBe(clickable);
 
         Selenide.sleep(1000);
         $(getScheduleInput()).selectOptionByValue(request.getSchedule());
@@ -56,8 +57,8 @@ public class TimeSheetRequestCRPage extends TimeSheetRequestPage {
         String date = CommonTest.convertDate(request.getDateBeg(),"S");
         $(getDateInputLocator()).setValue(date);
 
-        //$(getSendButtonLocator()).click();
-        click(getSendButtonLocator(),false);
+        $(getSendButtonLocator()).click();
+        //click(getSendButtonLocator(),false);
         try{
             $(this.getAddButton()).shouldBe(visible).should(Condition.clickable);
         }catch (AssertionError e){

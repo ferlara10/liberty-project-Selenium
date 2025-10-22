@@ -28,8 +28,9 @@ public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
     public boolean addTimesheetRequest(IPanama request) throws IOException {
         boolean result = false;
 
-        $(getAddButton()).shouldBe(visible).shouldBe(clickable).click();
-        $(getSendButtonLocator()).shouldBe(visible).shouldBe(clickable);
+        //$(getAddButton()).shouldBe(visible).shouldBe(clickable).click();
+        //$(getSendButtonLocator()).shouldBe(visible).shouldBe(clickable);
+        this.addRequest();
         //fill the form
 
         String journal = request.getJornal();
@@ -77,8 +78,8 @@ public class TimeSheetRequestPAPage extends TimeSheetRequestPage {
         String date = CommonTest.convertDate(request.getDateBeg(),"S");
         $(getDateInputLocator()).setValue(date);
 
-        //$(getSendButtonLocator()).click();
-        click(getSendButtonLocator(),false);
+        $(getSendButtonLocator()).click();
+        //click(getSendButtonLocator(),false);
         try{
             $(this.getAddButton()).shouldBe(visible).should(Condition.clickable);
             result = true;
