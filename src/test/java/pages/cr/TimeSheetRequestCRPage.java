@@ -17,8 +17,9 @@ import static suites.utils.CommonTest.*;
 
 public class TimeSheetRequestCRPage extends TimeSheetRequestPage {
 
-    public void addTimesheetRequest(ICostaRica request) throws IOException {
+    public boolean addTimesheetRequest(ICostaRica request) throws IOException {
 
+        boolean result = false;
 
         $(getAddButton()).shouldBe(visible).shouldBe(clickable);
         $(getAddButton()).click();
@@ -63,10 +64,12 @@ public class TimeSheetRequestCRPage extends TimeSheetRequestPage {
         //click(getSendButtonLocator(),false);
         try{
             $(this.getAddButton()).shouldBe(visible).should(Condition.clickable);
+            result = true;
         }catch (AssertionError e){
             String message = CommonTest.clickModal("//div[@class='modal-footer']//button[text()='Cerrar']");
             throw new AssertionError("I found an error message: "+message);
         }
+        return result;
     }
 
     public boolean approveCRRequest(ICostaRica request, String status, String id, String language){
@@ -112,6 +115,7 @@ public class TimeSheetRequestCRPage extends TimeSheetRequestPage {
 
 
     public boolean verifyRequestCRExist(ICostaRica request, String status, String language, String oneId){
+        Selenide.sleep(2000);
         SelenideElement row = searchCRDynamic(request, status, language, oneId);
         return row != null;
     }

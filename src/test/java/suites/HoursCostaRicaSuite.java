@@ -111,6 +111,9 @@ public class HoursCostaRicaSuite {
     }
 
     public void sendRequest(ICostaRica scenario){
+
+        boolean isRequestSent = false;
+
         try{
             LoginPage loginPage = new LoginPage();
             loginPage.navigate(this.baseURL+scenario.getCompany()+"/");
@@ -121,9 +124,15 @@ public class HoursCostaRicaSuite {
 
             boolean requestExist = false;
             TimeSheetRequestCRPage requestPage = homePage.navigateRequestCR(language,scenario.getCompany());
-            requestPage.addTimesheetRequest(scenario);
+            isRequestSent = requestPage.addTimesheetRequest(scenario);
             String status = language.equals("English") ? "Escalated" : "Escalado";
             requestExist = requestPage.verifyRequestCRExist(scenario,status,language,this.oneID);
+
+            if (isRequestSent && !requestExist){
+                deleteRequest(scenario);
+                throw new IOException("Apparently y sent the request but i didn't find it in the table");
+            }
+
             Assert.assertTrue(requestExist, "Don't able to find the request ");
             homePage.logout();
             System.out.println("Step 1 - send request");
