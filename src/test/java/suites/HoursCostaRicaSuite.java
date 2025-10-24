@@ -1,6 +1,7 @@
 package suites;
 
 import com.codeborne.selenide.Configuration;
+import com.codeborne.selenide.Selenide;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qameta.allure.Allure;
@@ -156,16 +157,20 @@ public class HoursCostaRicaSuite {
 
             TimeSheetRequestCRPage requestPage = homePage.navigateRequestCR(language,scenario.getCompany());
             isRequestSent = requestPage.addTimesheetRequest(scenario);
+            Selenide.screenshot("AddTimeSheet");
             String status = language.equals("English") ? "Escalated" : "Escalado";
             requestExist = requestPage.verifyRequestCRExist(scenario,status,language,this.oneID);
-
+            Selenide.screenshot("VerifyFistAttempt");
             if (isRequestSent && !requestExist){
-                System.out.println("         -> Retrying to find the request");
+
                 String currentDate = requestPage.getCurrentFromDateFilter();
                 int difference = getDifferenceByMonths(currentDate,getTodayDate());
+                System.out.println("         -> Retrying to find the request Current: "+currentDate+"_Difference: "+difference);
                 if (difference < 6){
                     requestPage.changeFromDateFilter("01/01/2023");
+                    Selenide.screenshot("AfterChangeFilter");
                     requestExist = requestPage.verifyRequestCRExist(scenario,status,language,this.oneID);
+                    Selenide.screenshot("VerifySecondAttempt");
                     if (!requestExist)
                         throw new IOException("Apparently y sent the request but i didn't find it in the table");
                 }
