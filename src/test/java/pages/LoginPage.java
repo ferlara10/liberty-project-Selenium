@@ -36,7 +36,7 @@ public class LoginPage {
         String passURL = String.format("%s/dt_testerpassword/?user=%s&token=%s&company=%s",
                 baseURL, user, token, company);
 
-        JSONObject data = CommonTest.getJsonObject(passURL).getJSONObject("data").getJSONObject("Password");
+        JSONObject data = CommonTest.getJsonObject(passURL,"GET").getJSONObject("data").getJSONObject("Password");
         return data.getString("PortalTestPwd");
     }
 
@@ -45,7 +45,7 @@ public class LoginPage {
         String passURL = String.format("%s/dt_testermanager/?user=%s&token=%s&company=%s&employee=%s",
                 baseURL, user, token, company, employee);
 
-        JSONObject response = CommonTest.getJsonObject(passURL);
+        JSONObject response = CommonTest.getJsonObject(passURL,"GET");
         try{
             return response.getJSONArray("data").getJSONObject(0);
         }catch (JSONException e){

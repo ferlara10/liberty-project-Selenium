@@ -75,7 +75,7 @@ public class TimeSheetRequestCRPage extends TimeSheetRequestPage {
     public boolean approveCRRequest(ICostaRica request, String status, String id, String language){
         boolean result = false;
         SelenideElement row = searchCRDynamic(request,status, language, id);
-        if (row.exists()){
+        if (row != null && row.exists()){
             int index = getHeaderIndex("Actions","Acciones",null,$$(getHeaderTable()));
             SelenideElement column = row.$$("td").get(index);
             column.$x(".//img[contains(@src,'icon_Approve.gif')]").click();
@@ -103,7 +103,7 @@ public class TimeSheetRequestCRPage extends TimeSheetRequestPage {
 
     public void deleteTimesheetRequest(ICostaRica request, String status, String language, String oneId){
         SelenideElement row = searchCRDynamic(request, status, language, oneId);
-        if (row.exists()){
+        if (row != null && row.exists()){
             int index = getHeaderIndex("Action", "Acción",null,$$(getHeaderTable()));
             SelenideElement column = row.$$("td").get(index);
             column.$x(".//a[img[@title='Delete' or @title='Borrar']]").click();

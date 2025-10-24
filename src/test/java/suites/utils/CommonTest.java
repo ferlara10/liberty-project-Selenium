@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +45,7 @@ public class CommonTest {
     public String getToken() throws IOException {
         String loginURL = String.format("%slogin/?user=%s&password=%s&_bodyPayload=1&f=login",apiURL,user,pass);
         // Parse JSON
-        JSONObject jsonObject = getJsonObject(loginURL);
+        JSONObject jsonObject = getJsonObject(loginURL,"GET");
 
         return jsonObject.getString("token");
     }
@@ -54,7 +55,7 @@ public class CommonTest {
                 apiURL,user,token,table,filter);
 
         // Parse JSON
-        JSONObject jsonObject = getJsonObject(scenariosURL);
+        JSONObject jsonObject = getJsonObject(scenariosURL,"GET");
         JSONArray jsonArray = new JSONArray(jsonObject.getJSONArray("data"));
 
         ObjectMapper mapper = new ObjectMapper();
@@ -76,11 +77,12 @@ public class CommonTest {
         return testData;
     }
 
-    public static JSONObject getJsonObject(String URL) throws IOException {
+
+    public static JSONObject getJsonObject(String URL, String method) throws IOException {
 
         URL url = new URL(URL);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
+        conn.setRequestMethod(method);
         int status = conn.getResponseCode();
 
         InputStream stream;
@@ -141,7 +143,7 @@ public class CommonTest {
         String url = String.format("%s/dt_testervariablepayment/?user=%s&token=%s&table=%s&company=%s&scenario=%s&employee=%s&dateBeg=%s&dateEnd=%s",
                 apiURL, user, authToken, table, company, scenarioName, employee, dateBeg, dateBeg);
 
-        return getJsonObject(url).getJSONObject("data");
+        return getJsonObject(url,"GET").getJSONObject("data");
     }
 
     public static void uploadDummyFile(String locator){
@@ -227,4 +229,14 @@ public class CommonTest {
         return "null";
     }
 
+    public static int getDifferenceByMonths(String startDate, String endDate){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        LocalDate start = LocalDate.parse(startDate, formatter);
+        LocalDate end = LocalDate.parse(endDate, formatter);
+
+        Period period = Period.between(start, end);
+
+        return period.getYears() * 12 + period.getMonths();
+    }
 }

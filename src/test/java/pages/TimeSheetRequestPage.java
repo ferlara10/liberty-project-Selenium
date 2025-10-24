@@ -10,7 +10,6 @@ import pojo.IColombia;
 import suites.utils.CommonTest;
 
 import java.util.HashMap;
-
 import static com.codeborne.selenide.Selenide.$$;
 
 public class TimeSheetRequestPage {
@@ -229,6 +228,12 @@ public class TimeSheetRequestPage {
         Selenide.sleep(1000);
         SelenideElement row = searchDynamic(request, status, id);
         return row != null;
+    }
+
+    public String getCurrentFromDateFilter(){
+        return Selenide.executeJavaScript(
+                "return document.getElementById('filterdatefrom').value;"
+        );
     }
 
     public void changeFromDateFilter(String from){
