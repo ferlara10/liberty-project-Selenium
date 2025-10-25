@@ -169,9 +169,9 @@ public class HoursCostaRicaSuite {
                         throw new IOException("Apparently y sent the request but i didn't find it in the table");
                 }
             }
-            Assert.assertTrue(requestExist, "Don't able to find the request ");
             homePage.logout();
             System.out.println("* Step 1 - Request Sent");
+            Assert.assertTrue(requestExist, "Don't able to find the request ");
         }catch(AssertionError | IOException e){
             HomePage homePage = new HomePage();
             homePage.logout();
@@ -240,7 +240,6 @@ public class HoursCostaRicaSuite {
              */
             Assert.fail(e.getMessage());
         }
-
     }
 
     public void revertRequest(String company, ICostaRica scenario){

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qameta.allure.Allure;
 import io.qameta.allure.model.Status;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.*;
@@ -17,10 +16,12 @@ import suites.utils.CommonTest;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
 
 import static io.qameta.allure.Allure.step;
+import static suites.utils.CommonTest.*;
 
 public class HoursPanamaSuite {
 
@@ -64,6 +65,36 @@ public class HoursPanamaSuite {
         Configuration.headless = true;
     }
 
+    @BeforeMethod
+    public void beforeMethod(Method method, Object[] testData) {
+        IPanama scenario = (IPanama) testData[0];
+
+        String URL = String.format("%sdt_testerdeleterequest/?user=%s&token=%s&company=%s&employee=%s&dateBeg=%s&dateEnd=%s&type=%s",
+                this.apiURL, this.globalUser, this.authToken, scenario.getCompany(), scenario.getEmployee(),scenario.getDateBeg(),scenario.getDateBeg(),"HR");
+        try{
+            JSONObject object = getJsonObject(URL,"DELETE");
+            int status = object.getInt("status");
+            System.out.println("         -> [BEFORE] Deleting a request executed correctly "+status);
+        }catch (IOException e){
+            System.out.println("         -> [BEFORE] I got an issue trying to consume DELETE API: "+e);
+        }
+    }
+
+    @AfterMethod
+    public void afterMethod(Method method, Object[] testData) {
+        IPanama scenario = (IPanama) testData[0];
+
+        String URL = String.format("%sdt_testerdeleterequest/?user=%s&token=%s&company=%s&employee=%s&dateBeg=%s&dateEnd=%s&type=%s",
+                this.apiURL, this.globalUser, this.authToken, scenario.getCompany(), scenario.getEmployee(),scenario.getDateBeg(),scenario.getDateBeg(),"HR");
+        try{
+            JSONObject object = getJsonObject(URL,"DELETE");
+            int status = object.getInt("status");
+            System.out.println("        -> [AFTER] Deleting a request executed correctly "+status);
+        }catch (IOException e){
+            System.out.println("        -> [AFTER] I got an issue trying to consume DELETE API: "+e);
+        }
+    }
+
     //for debug
     @DataProvider(name = "jsonData")
     public Object[][] dataProviderJSON() throws IOException {
@@ -100,10 +131,10 @@ public class HoursPanamaSuite {
             reportResults(this.scenariosTable,scenario);
         });
         step("Revert Request", () -> {
-            revertRequest(scenario.getCompany(), scenario);
+            //revertRequest(scenario.getCompany(), scenario);
         });
         step("Delete Request", () -> {
-            deleteRequest(scenario);
+            //deleteRequest(scenario);
         });
 
         System.out.println("Finish test case...");
@@ -128,16 +159,24 @@ public class HoursPanamaSuite {
             String status = language.equals("English") ? "Escalated" : "Escalado";
             requestExist = requestPage.verifyRequestPAExist(scenario,status,language,this.oneID);
 
-            if (isRequestSent && !requestExist)
-                throw new IOException("Apparently y sent the request but i didn't find it in the table");
-
-            Assert.assertTrue(requestExist, "Don't able to find the request ");
+            if (isRequestSent && !requestExist){
+                String currentDate = requestPage.getCurrentFromDateFilter();
+                int difference = getDifferenceByMonths(currentDate,getTodayDate());
+                System.out.println("         -> Retrying to find the request Current: "+currentDate+"_Difference: "+difference);
+                if (difference < 6){
+                    requestPage.changeFromDateFilter("01/01/2023");
+                    requestExist = requestPage.verifyRequestPAExist(scenario,status,language,this.oneID);
+                    if (!requestExist)
+                        throw new IOException("Apparently y sent the request but i didn't find it in the table");
+                }
+            }
             homePage.logout();
-            System.out.println("Step 1 - send request");
+            System.out.println("* Step 1 - Request Sent");
+            Assert.assertTrue(requestExist, "Don't able to find the request ");
         }catch(AssertionError | IOException e){
             HomePage homePage = new HomePage();
             homePage.logout();
-            System.out.println("Step 1 - ERROR - Company: "+scenario.getCompany()+" - Employee: "+scenario.getEmployee() + "-> "+e);
+            System.out.println("* Step 1 - ERROR - Company: "+scenario.getCompany()+" - Employee: "+scenario.getEmployee()+"_"+e);
             Assert.fail(e.getMessage());
         }
     }
@@ -149,6 +188,7 @@ public class HoursPanamaSuite {
 
         boolean isLoggedin = false;
         boolean isRequestApproved = false;
+        boolean requestExist = false;
 
         try{
             LoginPage loginPage = new LoginPage();
@@ -170,23 +210,36 @@ public class HoursPanamaSuite {
             else                                    //TODO - Multicompany scenario
                 requestPage = (TimeSheetRequestPAPage) homePage.navigateIntercompanyOvertimeInternational(language,company,managerCompany);
 
+            requestExist = requestPage.verifyRequestPAExist(scenario, status, language, this.oneID);
+            if (!requestExist){
+                System.out.println("         -> Retrying to find the request");
+                String currentDate = requestPage.getCurrentFromDateFilter();
+                int difference = getDifferenceByMonths(currentDate,getTodayDate());
+                if (difference < 6){
+                    requestPage.changeFromDateFilter("01/01/2023");
+                    requestExist = requestPage.verifyRequestPAExist(scenario, status, language, this.oneID);
+                    if (!requestExist)
+                        throw new IOException("Apparently y sent the request but i didn't find it in the table");
+                }
+            }
             isRequestApproved = requestPage.approvePARequest(scenario, status, this.oneID, language);
-            boolean requestExist = requestPage.verifyRequestPAExist(scenario, status, language, this.oneID);
+            requestExist = requestPage.verifyRequestPAExist(scenario, status, language, this.oneID);
             homePage.logout();
+            System.out.println("* Step 2 - Request Approved");
             Assert.assertFalse(requestExist, "I found a request. it's not supposed to be there");
 
         }catch(AssertionError | IOException e){
             System.out.println("Step 2 - ERROR - Manager Company: "+managerCompany+" - Employee: "+managerEmployee +"-> "+e);
+            /*
             HomePage homePage = new HomePage();
             if (isLoggedin)
                 homePage.logout();
             if (isRequestApproved)
                 revertRequest(company,scenario);
             deleteRequest(scenario);
+             */
             Assert.fail(e.getMessage());
         }
-        System.out.println("Step 2 - approve");
-
     }
 
     public void revertRequest(String company, IPanama scenario){
@@ -251,18 +304,16 @@ public class HoursPanamaSuite {
                 scenario.getCompany(), scenario.getScenario(), scenario.getEmployee(),
                 scenario.getDateBeg(), scenario.getDateBeg());
 
-        JSONArray result = data.getJSONArray("result");
-        JSONArray expected = data.getJSONArray("expected");
         String match = data.getString("match");
-        if (match.equals("SUCCESS"))
+        if (match.equals("SUCCESS")) {
+            System.out.println("* Step 5 - API query - report -> Passed");
             Allure.step("Validation passed", Status.PASSED);
-        else{
-            revertRequest(scenario.getCompany(),scenario);
-            deleteRequest(scenario);
-            System.out.println("Step 5 - report -> Failed");
+        } else {
+            //revertRequest(scenario.getCompany(),scenario);
+            //deleteRequest(scenario);
+            System.out.println("* Step 5 - API query - report -> Failed");
             Assert.fail("Data does not matches expected results. Result:" + data.get("match"));
         }
-        System.out.println("Step 5 - report");
     }
 
 }

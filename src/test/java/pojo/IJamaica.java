@@ -25,6 +25,11 @@ public class IJamaica {
     @JsonProperty("CostCenter")
     private String CostCenter;
 
+    @JsonProperty("CallOut")
+    private String CallOut;
+    @JsonProperty("Holiday")
+    private String Holiday;
+
     @JsonProperty("_inactive")
     private String inactive;
     @JsonProperty("_user")
@@ -110,5 +115,21 @@ public class IJamaica {
 
     public void setCostCenter(String costCenter) {
         CostCenter = costCenter;
+    }
+
+    public String getCallOut() {
+        return CallOut;
+    }
+
+    public void setCallOut(String callOut) {
+        CallOut = callOut;
+    }
+
+    public String getHoliday() {
+        return Holiday;
+    }
+
+    public void setHoliday(String holiday) {
+        Holiday = holiday;
     }
 }

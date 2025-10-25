@@ -15,12 +15,23 @@ import static suites.utils.CommonTest.getHeadersIIndex;
 
 public class TimeSheetRequestJMPage extends TimeSheetRequestPage {
 
+    private String callOutDayCheck = "input[name='calloutopt']";
+    private String holidayCheck = "input[name='holidayopt']";
 
-    public void addTimesheetRequestJM(IJamaica request){
+    public boolean addTimesheetRequestJM(IJamaica request){
+
+        boolean result = false;
+
         this.addRequest();
-        //fill the form
+
         CommonTest.enterTime(request.getTime(),getInitialHourInput());
         CommonTest.enterTime(request.getOutTime(),getEndHourInput());
+
+        if (request.getCallOut().equals("1"))
+            $(callOutDayCheck).click();
+
+        if (request.getHoliday().equals("1"))
+            $(holidayCheck).click();
 
         $(getReasonSelect()).setValue(request.getReason());
         $(getCostCenterLocator()).selectOptionByValue(request.getCostCenter());
@@ -30,10 +41,12 @@ public class TimeSheetRequestJMPage extends TimeSheetRequestPage {
         CommonTest.click(getSendButtonLocator(),false);
         try{
             $(this.getAddButton()).shouldBe(Condition.visible).should(Condition.clickable);
+            result = true;
         }catch (AssertionError e){
             String message = CommonTest.clickModal("//div[@class='modal-footer']//button[text()='Cerrar' or text()='Close']");
             throw new AssertionError("I found an error message: "+message);
         }
+        return result;
     }
 
     public void deleteTimesheetRequestJM(IJamaica request, String status, String language){
@@ -50,7 +63,7 @@ public class TimeSheetRequestJMPage extends TimeSheetRequestPage {
 
     public void approveRequestJM(IJamaica request, String status, String language){
         SelenideElement row = searchJDynamic(request,status, language);
-        if (row.exists()){
+        if (row != null && row.exists()){
             int index = getHeaderIndex("Actions","Acciones",null,$$(getHeaderTable()));
             SelenideElement column = row.$$("td").get(index);
             column.$x(".//img[contains(@src,'icon_Approve.gif')]").click();
@@ -74,6 +87,7 @@ public class TimeSheetRequestJMPage extends TimeSheetRequestPage {
     }
 
     public boolean verifyRequestExistJM(IJamaica request, String status, String language){
+        Selenide.sleep(1000);
         SelenideElement row = searchJDynamic(request, status, language);
         return row != null;
     }

@@ -237,6 +237,6 @@ public class CommonTest {
 
         Period period = Period.between(start, end);
 
-        return period.getYears() * 12 + period.getMonths();
+        return (period.getYears() * 12 + period.getMonths())+1;
     }
 }
