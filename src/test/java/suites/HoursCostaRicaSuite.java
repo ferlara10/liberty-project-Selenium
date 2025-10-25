@@ -1,7 +1,6 @@
 package suites;
 
 import com.codeborne.selenide.Configuration;
-import com.codeborne.selenide.Selenide;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qameta.allure.Allure;
@@ -119,7 +118,7 @@ public class HoursCostaRicaSuite {
         return cachedData;
     }
 
-    @Test(dataProvider = "jsonData")
+    @Test(dataProvider = "costaRicaScenarios")
     public void hoursFlow(ICostaRica scenario) throws IOException {
         System.out.println("-->> Test initialized ");
 
@@ -157,10 +156,8 @@ public class HoursCostaRicaSuite {
 
             TimeSheetRequestCRPage requestPage = homePage.navigateRequestCR(language,scenario.getCompany());
             isRequestSent = requestPage.addTimesheetRequest(scenario);
-            Selenide.screenshot("1AfterCreateRequest");
             String status = language.equals("English") ? "Escalated" : "Escalado";
             requestExist = requestPage.verifyRequestCRExist(scenario,status,language,this.oneID);
-            Selenide.screenshot("2VerifyFirstAttempt");
             if (isRequestSent && !requestExist){
                 String currentDate = requestPage.getCurrentFromDateFilter();
                 int difference = getDifferenceByMonths(currentDate,getTodayDate());
@@ -168,12 +165,10 @@ public class HoursCostaRicaSuite {
                 if (difference < 6){
                     requestPage.changeFromDateFilter("01/01/2023");
                     requestExist = requestPage.verifyRequestCRExist(scenario,status,language,this.oneID);
-                    Selenide.screenshot("2VerifySecondAttempt");
                     if (!requestExist)
                         throw new IOException("Apparently y sent the request but i didn't find it in the table");
                 }
             }
-
             Assert.assertTrue(requestExist, "Don't able to find the request ");
             homePage.logout();
             System.out.println("* Step 1 - Request Sent");
