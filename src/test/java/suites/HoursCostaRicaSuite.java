@@ -157,20 +157,15 @@ public class HoursCostaRicaSuite {
 
             TimeSheetRequestCRPage requestPage = homePage.navigateRequestCR(language,scenario.getCompany());
             isRequestSent = requestPage.addTimesheetRequest(scenario);
-            Selenide.screenshot("AddTimeSheet");
             String status = language.equals("English") ? "Escalated" : "Escalado";
             requestExist = requestPage.verifyRequestCRExist(scenario,status,language,this.oneID);
-            Selenide.screenshot("VerifyFistAttempt");
             if (isRequestSent && !requestExist){
-
                 String currentDate = requestPage.getCurrentFromDateFilter();
                 int difference = getDifferenceByMonths(currentDate,getTodayDate());
                 System.out.println("         -> Retrying to find the request Current: "+currentDate+"_Difference: "+difference);
                 if (difference < 6){
                     requestPage.changeFromDateFilter("01/01/2023");
-                    Selenide.screenshot("AfterChangeFilter");
                     requestExist = requestPage.verifyRequestCRExist(scenario,status,language,this.oneID);
-                    Selenide.screenshot("VerifySecondAttempt");
                     if (!requestExist)
                         throw new IOException("Apparently y sent the request but i didn't find it in the table");
                 }
@@ -182,7 +177,7 @@ public class HoursCostaRicaSuite {
         }catch(AssertionError | IOException e){
             HomePage homePage = new HomePage();
             homePage.logout();
-            System.out.println("* Step 1 - ERROR - Company: "+scenario.getCompany()+" - Employee: "+scenario.getEmployee());
+            System.out.println("* Step 1 - ERROR - Company: "+scenario.getCompany()+" - Employee: "+scenario.getEmployee()+"_"+e);
             Assert.fail(e.getMessage());
         }
     }
@@ -232,19 +227,21 @@ public class HoursCostaRicaSuite {
             isRequestApproved = requestPage.approveCRRequest(scenario, status, this.oneID, language);
             requestExist = requestPage.verifyRequestCRExist(scenario, status, language, this.oneID);
             homePage.logout();
+            System.out.println("* Step 2 - Request Approved");
             Assert.assertFalse(requestExist, "I found a request. it's not supposed to be there");
 
         }catch(AssertionError | IOException e){
             System.out.println("* Step 2 - ERROR - Manager Company: "+managerCompany+" - Employee: "+managerEmployee + "- "+e);
+            /*
             HomePage homePage = new HomePage();
             if (isLoggedin)
                 homePage.logout();
             if (isRequestApproved)
                 revertRequest(company,scenario);
             deleteRequest(scenario);
+             */
             Assert.fail(e.getMessage());
         }
-        System.out.println("* Step 2 - Request Approved");
 
     }
 
