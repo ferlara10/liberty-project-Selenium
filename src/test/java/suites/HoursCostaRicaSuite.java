@@ -103,7 +103,7 @@ public class HoursCostaRicaSuite {
         ObjectMapper mapper = new ObjectMapper();
         List<ICostaRica> dataList = mapper.readValue(new File(
                 Objects.requireNonNull(
-                        getClass().getClassLoader().getResource("dataJamaica.json")
+                        getClass().getClassLoader().getResource("errors.json")
                 ).getFile()
         ), new TypeReference<List<ICostaRica>>() {});
 
@@ -119,7 +119,7 @@ public class HoursCostaRicaSuite {
         return cachedData;
     }
 
-    @Test(dataProvider = "costaRicaScenarios")
+    @Test(dataProvider = "jsonData")
     public void hoursFlow(ICostaRica scenario) throws IOException {
         System.out.println("-->> Test initialized ");
 
