@@ -19,6 +19,8 @@ on:
 jobs:
   run-tests:
     runs-on: ubuntu-latest
+    env:
+      TZ: America/Santo_Domingo
 
     steps:
       - name: Checkout repository
