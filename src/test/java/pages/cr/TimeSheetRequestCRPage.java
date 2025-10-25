@@ -152,6 +152,13 @@ public class TimeSheetRequestCRPage extends TimeSheetRequestPage {
                 else
                     todayDate = CommonTest.getTodayDateEnglish();
 
+                System.out.println("-----------------------------------------");
+                System.out.println("First: "+requestDate+"_"+dateConverted);
+                System.out.println("Secon: "+oneID+"_"+oneId);
+                System.out.println("Third: "+enterDate+"_"+todayDate);
+                System.out.println("Fourt: "+status+"_"+requestStatus);
+                System.out.println("-----------------------------------------");
+
                 if (requestDate.equals(dateConverted) && oneID.contains(oneId)
                         && enterDate.equals(todayDate) && status.equals(requestStatus)){
                     return rows.get(i);
