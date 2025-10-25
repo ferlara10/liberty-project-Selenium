@@ -16,7 +16,10 @@ public class TimeSheetRequestCOPage extends TimeSheetRequestPage {
 
 
 
-    public void addTimesheetRequest(IColombia request) throws IOException{
+    public boolean addTimesheetRequest(IColombia request) throws IOException{
+
+        boolean result = false;
+
         this.addRequest();
         //fill the form
         CommonTest.enterTime(request.getTime(),getInitialHourInput());
@@ -30,10 +33,12 @@ public class TimeSheetRequestCOPage extends TimeSheetRequestPage {
         $(getSendButtonLocator()).click();
         try{
             $(this.getAddButton()).shouldBe(Condition.visible).should(Condition.clickable);
+            result = true;
         }catch (AssertionError e){
             String message = CommonTest.clickModal("//div[@class='modal-footer']//button[text()='Cerrar']");
             throw new AssertionError("I found an error message: "+message);
         }
+        return result;
     }
 
     public boolean verifyRequestExist(IColombia request){
