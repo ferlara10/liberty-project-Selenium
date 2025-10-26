@@ -45,7 +45,10 @@ public class TimeSheetRequestInternationalPage extends TimeSheetRequestPage {
         }
     }
 
-    public void addTimesheetRequest(IInternational request, String language) throws IOException {
+    public boolean addTimesheetRequest(IInternational request, String language) throws IOException {
+
+        boolean result = false;
+
         this.addRequest();
         //fill the form
         String date = getDateBaseOnLanguage(language, request.getDateBeg());
@@ -63,10 +66,12 @@ public class TimeSheetRequestInternationalPage extends TimeSheetRequestPage {
         $(getSendButtonLocator()).click();
         try{
             $(this.getAddButton()).shouldBe(Condition.visible).should(Condition.clickable);
+            result = true;
         }catch (AssertionError e){
             String message = CommonTest.clickModal("//div[@class='modal-footer']//button[text()='Close'  or text()='Cerrar']");
             throw new AssertionError("I found an error message: "+message);
         }
+        return result;
     }
 
     public boolean verifyRequestIExist(IInternational request, String status, String language){
