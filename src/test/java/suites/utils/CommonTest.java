@@ -67,6 +67,7 @@ public class CommonTest {
             case "XX": dataArray = mapper.readValue(a, IInternational[].class); break;
             case "JM": dataArray = mapper.readValue(a, IJamaica[].class);       break;
             case "CR": dataArray = mapper.readValue(a, ICostaRica[].class);     break;
+            case "Reimbursements": dataArray = mapper.readValue(a, IReimbursement[].class); break;
             default: dataArray = mapper.readValue(a, IColombia[].class);
         }
         Object[][] testData = new Object[dataArray.length][1];
@@ -198,6 +199,13 @@ public class CommonTest {
         }
     }
 
+    public static void setValueJS(String locator, String value){
+        executeJavaScript(
+                "arguments[0].value='"+value+"'; arguments[0].dispatchEvent(new Event('change', { bubbles: true }));",
+                $(locator)
+        );
+    }
+
     public static HashMap<String, Integer> getHeadersIIndex(ElementsCollection header){
         HashMap<String, Integer> result = new HashMap<String, Integer>();;
         for(int i=0; i < header.size() ;i++){
@@ -238,5 +246,11 @@ public class CommonTest {
         Period period = Period.between(start, end);
 
         return (period.getYears() * 12 + period.getMonths())+1;
+    }
+
+    public static String convertAmounts(String originAmount){
+        String result = originAmount.replace(".","");
+        result = result.replace(",",".");
+        return result;
     }
 }

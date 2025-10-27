@@ -129,7 +129,7 @@ public class HoursInternationalSuite {
         step("Report", () -> {
             reportResults(this.scenariosTable,scenario);
         });
-        step("Revert Request: " + scenario.getEmployee(), () -> {
+        step("Revert Request", () -> {
             //revertRequest(scenario.getCompany(), scenario);
         });
         step("Delete Request", () -> {

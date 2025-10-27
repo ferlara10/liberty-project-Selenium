@@ -10,9 +10,10 @@ import org.testng.Assert;
 import org.testng.annotations.*;
 import pages.HomePage;
 import pages.LoginPage;
-import pages.jm.TimeSheetRequestJMPage;
-import pojo.IJamaica;
+import pages.jm.ReimbursementsRequestJMPage;
+import pojo.IReimbursement;
 import suites.utils.CommonTest;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -22,7 +23,7 @@ import java.util.Objects;
 import static io.qameta.allure.Allure.step;
 import static suites.utils.CommonTest.*;
 
-public class HoursJamaicaSuite {
+public class ReimbursementsSuite {
 
     private static Object[][] cachedData;
     private String apiURL;
@@ -35,7 +36,7 @@ public class HoursJamaicaSuite {
     private JSONObject managerInformation = null;
     private String managerPassword = "";
 
-    private String scenariosTable = "TEST_LLA-JM_Hours";
+    private String scenariosTable = "TEST_Reimbursement";
     private String oneID = "";
 
     @BeforeSuite
@@ -52,7 +53,7 @@ public class HoursJamaicaSuite {
             CommonTest commonTest = new CommonTest(apiEnv,this.globalUser,this.globalPass);
             this.apiURL = commonTest.getAPIURL();
             authToken = commonTest.getToken();
-            cachedData = commonTest.getScenarios(this.authToken,this.scenariosTable,"","JM");
+            cachedData = commonTest.getScenarios(this.authToken,this.scenariosTable,"","Reimbursements");
             System.out.println("finish fetch data...");
         }
     }
@@ -61,15 +62,15 @@ public class HoursJamaicaSuite {
     public void setup() {
         Configuration.browser = "chrome";
         Configuration.browserSize = "1920x1080"; // sets window size
-        Configuration.headless = true;
+        Configuration.headless = false;
     }
 
     @BeforeMethod
     public void beforeMethod(Method method, Object[] testData) {
-        IJamaica scenario = (IJamaica) testData[0];
+        IReimbursement scenario = (IReimbursement) testData[0];
 
         String URL = String.format("%sdt_testerdeleterequest/?user=%s&token=%s&company=%s&employee=%s&dateBeg=%s&dateEnd=%s&type=%s",
-                this.apiURL, this.globalUser, this.authToken, scenario.getCompany(), scenario.getEmployee(),scenario.getDateBeg(),scenario.getDateBeg(),"HR");
+                this.apiURL, this.globalUser, this.authToken, scenario.getCompany(), scenario.getEmployee(),scenario.getDateBeg(),scenario.getDateBeg(),"RE");
         try{
             JSONObject object = getJsonObject(URL,"DELETE");
             int status = object.getInt("status");
@@ -81,10 +82,10 @@ public class HoursJamaicaSuite {
 
     @AfterMethod
     public void afterMethod(Method method, Object[] testData) {
-        IJamaica scenario = (IJamaica) testData[0];
+        IReimbursement scenario = (IReimbursement) testData[0];
 
         String URL = String.format("%sdt_testerdeleterequest/?user=%s&token=%s&company=%s&employee=%s&dateBeg=%s&dateEnd=%s&type=%s",
-                this.apiURL, this.globalUser, this.authToken, scenario.getCompany(), scenario.getEmployee(),scenario.getDateBeg(),scenario.getDateBeg(),"HR");
+                this.apiURL, this.globalUser, this.authToken, scenario.getCompany(), scenario.getEmployee(),scenario.getDateBeg(),scenario.getDateBeg(),"RE");
         try{
             JSONObject object = getJsonObject(URL,"DELETE");
             int status = object.getInt("status");
@@ -98,11 +99,11 @@ public class HoursJamaicaSuite {
     @DataProvider(name = "jsonData")
     public Object[][] dataProviderJSON() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        List<IJamaica> dataList = mapper.readValue(new File(
+        List<IReimbursement> dataList = mapper.readValue(new File(
                 Objects.requireNonNull(
                         getClass().getClassLoader().getResource("errors.json")
                 ).getFile()
-        ), new TypeReference<List<IJamaica>>() {});
+        ), new TypeReference<List<IReimbursement>>() {});
 
         Object[][] dataArray = new Object[dataList.size()][1];
         for (int i = 0; i < dataList.size(); i++) {
@@ -111,13 +112,13 @@ public class HoursJamaicaSuite {
         return dataArray;
     }
 
-    @DataProvider(name = "jamaicaScenarios")
+    @DataProvider(name = "reimbursementScenarios")
     public Object[][] dataProviderJamaica(){
         return cachedData;
     }
 
-    @Test(dataProvider = "jamaicaScenarios")
-    public void hoursFlow(IJamaica scenario) throws IOException {
+    @Test(dataProvider = "jsonData")
+    public void hoursFlow(IReimbursement scenario) throws IOException {
         System.out.println("-->> Test initialized ");
 
         step("Send the Request"+" - Company: "+scenario.getCompany()+" - Employee: "+scenario.getEmployee(), () -> {
@@ -135,35 +136,34 @@ public class HoursJamaicaSuite {
         step("Delete Request", () -> {
             //deleteRequest(scenario);
         });
-
         System.out.println("Finish test case...");
     }
 
-    public void sendRequest(IJamaica scenario){
+    public void sendRequest(IReimbursement scenario) {
 
         boolean isRequestSent = false;
         boolean requestExist = false;
 
-        try{
+        try {
             LoginPage loginPage = new LoginPage();
-            loginPage.navigate(this.baseURL+scenario.getCompany()+"/");
+            loginPage.navigate(this.baseURL + scenario.getCompany() + "/");
             String language = loginPage.getLanguage();
             employeePassword = loginPage.getUserPassword(this.apiURL, this.globalUser, this.authToken, scenario.getCompany());
-            HomePage homePage = loginPage.login(scenario.getEmployee(), this.employeePassword, "" );
+            HomePage homePage = loginPage.login(scenario.getEmployee(), this.employeePassword, "");
             this.oneID = loginPage.getOneID();
 
-            TimeSheetRequestJMPage requestPage =
-                    (TimeSheetRequestJMPage) homePage.navigateRequestJM(scenario.getClasse(),true);
-            isRequestSent = requestPage.addTimesheetRequestJM(scenario);
+            ReimbursementsRequestJMPage requestPage =
+                    (ReimbursementsRequestJMPage) homePage.navigateReimbursements();
+            isRequestSent = requestPage.addReimbursementsRequest(scenario, language);
             String status = language.equals("English") ? "Escalated" : "Escalado";
-            requestExist = requestPage.verifyRequestExistJM(scenario, status, language);
-            if (isRequestSent && !requestExist){
+            requestExist = requestPage.verifyReimbursementExist(scenario, status, language);
+            if (isRequestSent && !requestExist) {
                 String currentDate = requestPage.getCurrentFromDateFilter();
-                int difference = getDifferenceByMonths(currentDate,getTodayDate());
-                System.out.println("         -> Retrying to find the request Current: "+currentDate+"_Difference: "+difference);
-                if (difference < 6){
+                int difference = getDifferenceByMonths(currentDate, getTodayDate());
+                System.out.println("         -> Retrying to find the request Current: " + currentDate + "_Difference: " + difference);
+                if (difference < 6) {
                     requestPage.changeFromDateFilter("01/01/2023");
-                    requestExist = requestPage.verifyRequestExistJM(scenario, status, language);
+                    requestExist = requestPage.verifyReimbursementExist(scenario, status, language);
                     if (!requestExist)
                         throw new IOException("Apparently y sent the request but i didn't find it in the table");
                 }
@@ -172,15 +172,15 @@ public class HoursJamaicaSuite {
             homePage.logout();
             System.out.println("* Step 1 - Request Sent");
             Assert.assertTrue(requestExist, "Don't able to find the request ");
-        }catch(AssertionError | IOException e){
+        } catch (AssertionError | IOException e) {
             HomePage homePage = new HomePage();
             homePage.logout();
-            System.out.println("* Step 1 - ERROR - Company: "+scenario.getCompany()+" - Employee: "+scenario.getEmployee()+"_"+e);
+            System.out.println("* Step 1 - ERROR - Company: " + scenario.getCompany() + " - Employee: " + scenario.getEmployee() + "_" + e);
             Assert.fail(e.getMessage());
         }
     }
 
-    public void approveRequest(String employee, String company, IJamaica scenario) throws IOException {
+    public void approveRequest(String employee, String company, IReimbursement scenario) throws IOException {
 
         boolean requestExist = false;
         String managerCompany = "";
@@ -200,23 +200,23 @@ public class HoursJamaicaSuite {
 
             if (company.equals(managerCompany)){
                 //Same company scenario
-                TimeSheetRequestJMPage requestPage = (TimeSheetRequestJMPage)
-                        homePage.navigateApprovalsJM(scenario.getClasse(), language, true);
+                ReimbursementsRequestJMPage requestPage = (ReimbursementsRequestJMPage)
+                        homePage.navigateReimbursementApprovals();
 
-                requestExist = requestPage.verifyRequestExistJM(scenario, status, language);
+                requestExist = requestPage.verifyReimbursementExist(scenario, status, language);
                 if (!requestExist){
                     System.out.println("         -> Retrying to find the request");
                     String currentDate = requestPage.getCurrentFromDateFilter();
                     int difference = getDifferenceByMonths(currentDate,getTodayDate());
                     if (difference < 6){
                         requestPage.changeFromDateFilter("01/01/2023");
-                        requestExist = requestPage.verifyRequestExistJM(scenario, status, language);
+                        requestExist = requestPage.verifyReimbursementExist(scenario, status, language);
                         if (!requestExist)
                             throw new IOException("Apparently y sent the request but i didn't find it in the table");
                     }
                 }
-                requestPage.approveRequestJM(scenario, status, language);
-                requestExist = requestPage.verifyRequestExistJM(scenario, status, language);
+                requestPage.approveReimbursementRequest(scenario, status, language);
+                requestExist = requestPage.verifyReimbursementExist(scenario, status, language);
                 homePage.logout();
                 System.out.println("* Step 2 - Request Approved");
                 Assert.assertFalse(requestExist, "I found a request. it's not supposed to be there");
@@ -232,10 +232,9 @@ public class HoursJamaicaSuite {
             System.out.println("* Step 2 - ERROR - Manager Company: "+managerCompany+" - Employee: "+managerEmployee + "- "+e);
             Assert.fail(e.getMessage());
         }
-
     }
 
-    public void reportResults(IJamaica scenario) throws IOException {
+    public void reportResults(IReimbursement scenario) throws IOException {
         JSONObject data = CommonTest.getResult(this.apiURL, this.globalUser, this.authToken, this.scenariosTable,
                 scenario.getCompany(), scenario.getScenario(), scenario.getEmployee(),
                 scenario.getDateBeg(), scenario.getDateBeg());
@@ -251,69 +250,5 @@ public class HoursJamaicaSuite {
             Assert.fail("Data does not matches expected results. Result:" + data.get("match"));
         }
     }
-
-    public void revertRequest(String company, IJamaica request){
-
-        try{
-            LoginPage loginPage = new LoginPage();
-            String managerCompany = this.managerInformation.getString("Company");
-            String managerEmployee = this.managerInformation.getString("Employee");
-
-            loginPage.navigate(this.baseURL+managerCompany+"/");
-            String language = loginPage.getLanguage();
-            HomePage homePage = loginPage.login(managerEmployee, this.managerPassword, "" );
-
-            String status = language.equals("English") ? "Completed" : "Completado";
-            if (company.equals(managerCompany)){
-                //Same company scenario
-                TimeSheetRequestJMPage requestPage = (TimeSheetRequestJMPage)
-                        homePage.navigateApprovalsJM(request.getClasse(), language, false);
-
-
-                requestPage.reverseRequestJM(request, status, language);
-                boolean requestExist = requestPage.verifyRequestExistJM(request,status, language);
-                Assert.assertFalse(requestExist, "Don't able to find the request ");
-                homePage.logout();
-
-            }else{
-                //TODO - Multicompany scenario
-                System.out.println("->");
-            }
-        }catch(AssertionError e){
-            HomePage homePage = new HomePage();
-            homePage.logout();
-            Assert.fail(e.getMessage());
-        }
-        System.out.println("Step 3 - revert");
-    }
-
-    public void deleteRequest(IJamaica scenario){
-
-        try{
-            LoginPage loginPage = new LoginPage();
-            loginPage.navigate(this.baseURL+scenario.getCompany()+"/");
-            String language = loginPage.getLanguage();
-            HomePage homePage = loginPage.login(scenario.getEmployee(), this.employeePassword, "" );
-
-            boolean requestExist = false;
-            TimeSheetRequestJMPage requestPage =
-                    (TimeSheetRequestJMPage) homePage.navigateRequestJM(scenario.getClasse(),true);
-            String status = language.equals("English") ? "Escalated" : "Escalado";
-            requestPage.deleteTimesheetRequestJM(scenario,status,language);
-            requestExist = requestPage.verifyRequestExistJM(scenario, status, language);
-
-            Assert.assertFalse(requestExist, "Don't able to find the request ");
-            homePage.logout();
-            System.out.println("Step 4 - delete");
-        }catch (AssertionError e){
-            HomePage homePage = new HomePage();
-            homePage.logout();
-            Assert.fail(e.getMessage());
-        }
-
-    }
-
-
-
 
 }

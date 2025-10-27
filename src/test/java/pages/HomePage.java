@@ -5,6 +5,7 @@ import pages.co.SurchargeRequestCOPage;
 import pages.co.TimeSheetRequestCOPage;
 import pages.cr.TimeSheetRequestCRPage;
 import pages.in.TimeSheetRequestInternationalPage;
+import pages.jm.ReimbursementsRequestJMPage;
 import pages.jm.TimeSheetRequestJMPage;
 import pages.pa.TimeSheetRequestPAPage;
 
@@ -347,6 +348,18 @@ public class HomePage {
         }
 
         return new TimeSheetRequestJMPage();
+    }
+
+    public ReimbursementsRequestJMPage navigateReimbursements(){
+        $("a[title=\"Reimbursements\"]").click();
+        click("//a[@title=\"Reimbursements\" and contains(@href,'requisition')]",true);
+        return new ReimbursementsRequestJMPage();
+    }
+
+    public ReimbursementsRequestJMPage navigateReimbursementApprovals(){
+        $("a[title=\"Reimbursements Approvals\"]").click();
+        click("//a[@title='Reimbursements Approvals']/following-sibling::ul//a[@title='Approvals']",true);
+        return new ReimbursementsRequestJMPage();
     }
 
     public void logout(){
