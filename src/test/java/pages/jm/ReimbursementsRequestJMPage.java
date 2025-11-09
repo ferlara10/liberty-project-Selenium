@@ -17,6 +17,7 @@ public class ReimbursementsRequestJMPage extends TimeSheetRequestPage {
     private String dateReiInput = "#reqformrefundfield0_1";
     private String quantityReiInput = "#refunddetailstbl #refunddetails td.refunddetailstbl_num input.form-control";
     private String amountReiInput = "#refunddetailstbl #refunddetails tr:first-child td:nth-child(4) input.form-control";
+    private String tableBodyColumns = "table#refunddetailstbl tbody td";
 
     public boolean addReimbursementsRequest(IReimbursement request, String language){
 
@@ -30,15 +31,18 @@ public class ReimbursementsRequestJMPage extends TimeSheetRequestPage {
         Selenide.sleep(1000);
         $(dateReiInput).setValue(date);
 
-        if (!request.getQuantity().isEmpty())
-            setValueJS(quantityReiInput, convertAmounts(request.getQuantity()));
-
-        if (!request.getAmount().isEmpty())
-            setValueJS(amountReiInput, convertAmounts(request.getAmount()));
-
         $(getReasonSelect()).setValue(request.getReason());
 
         $(getDateInputLocator()).setValue(date);
+
+        ElementsCollection columns = $$(tableBodyColumns);
+        ElementsCollection headerElements = $$("table#refunddetailstbl tbody tr th").filterBy(Condition.visible);
+        HashMap<String, Integer> headers = getReimbursementsHeaders(headerElements);
+
+        if (!request.getQuantity().isEmpty())
+            setValueJS(columns.get(headers.get("Quantity")).find("input"), convertAmounts(request.getQuantity()));
+        if (!request.getAmount().isEmpty())
+            setValueJS(columns.get(headers.get("Amount")).find("input"), convertAmounts(request.getAmount()));
 
         click(getSendButtonLocator(),false);
         try{
@@ -109,4 +113,16 @@ public class ReimbursementsRequestJMPage extends TimeSheetRequestPage {
         }
     }
 
+    public HashMap<String, Integer> getReimbursementsHeaders(ElementsCollection headers){
+        HashMap<String, Integer> result = new HashMap<String, Integer>();
+        for(int i=0; i < headers.size() ;i++){
+            String name = headers.get(i).getText();
+            if (name.equals("Quantity") || name.equals("Monto"))
+                result.put("Quantity", i);
+            if (name.equals("Amount") || name.equals("Importe"))
+                result.put("Amount", i);
+
+        }
+        return result;
+    }
 }

@@ -2,6 +2,7 @@ package suites.utils;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selenide;
+import com.codeborne.selenide.SelenideElement;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.openqa.selenium.By;
@@ -199,15 +200,15 @@ public class CommonTest {
         }
     }
 
-    public static void setValueJS(String locator, String value){
+    public static void setValueJS(SelenideElement element, String value){
         executeJavaScript(
                 "arguments[0].value='"+value+"'; arguments[0].dispatchEvent(new Event('change', { bubbles: true }));",
-                $(locator)
+                element
         );
     }
 
     public static HashMap<String, Integer> getHeadersIIndex(ElementsCollection header){
-        HashMap<String, Integer> result = new HashMap<String, Integer>();;
+        HashMap<String, Integer> result = new HashMap<String, Integer>();
         for(int i=0; i < header.size() ;i++){
             String name = header.get(i).getText();
             if (name.equals("Date") || name.equals("Fecha"))

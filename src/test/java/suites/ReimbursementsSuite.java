@@ -62,7 +62,7 @@ public class ReimbursementsSuite {
     public void setup() {
         Configuration.browser = "chrome";
         Configuration.browserSize = "1920x1080"; // sets window size
-        Configuration.headless = false;
+        Configuration.headless = true;
     }
 
     @BeforeMethod
@@ -117,7 +117,7 @@ public class ReimbursementsSuite {
         return cachedData;
     }
 
-    @Test(dataProvider = "jsonData")
+    @Test(dataProvider = "reimbursementScenarios")
     public void hoursFlow(IReimbursement scenario) throws IOException {
         System.out.println("-->> Test initialized ");
 
