@@ -1,7 +1,7 @@
 name: Run Hours Suite
 
 on:
-  workflow_dispatch:       # allows manual trigger
+  workflow_dispatch:
     inputs:
       suite:
         description: "Choose which TestNG suite to run"
@@ -14,6 +14,7 @@ on:
           - CostaRica.xml
           - Colombia.xml
           - International.xml
+          - Reimbursements.xml
           - testng.xml
 
 jobs:
@@ -32,6 +33,11 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Install Maven
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y maven
+
       - name: Cache Maven dependencies
         uses: actions/cache@v4
         with:
@@ -39,7 +45,6 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-    
 
       - name: Run TestNG Suite
         run: |
@@ -47,14 +52,14 @@ jobs:
           mvn clean test -DsuiteXmlFile=${{ github.event.inputs.suite }} -Dselenide.headless=true
         continue-on-error: true
 
-      - name: Generate Allure Report
-        uses: simple-elf/allure-report-action@v1.7
+      # ✅ Updated Allure Action section
+      - name: Generate & Publish Allure Report
+        uses: simple-elf/allure-report-action@master
         with:
-          allure_results: target/allure-results
-          gh_pages: gh-pages
-          allure_report: target/allure-report
+          allure_results: allure-results
+          allure_report: allure-report
           allure_history: allure-history
-
+          gh_pages: gh-pages
 
       - name: Upload Allure Report as artifact
         uses: actions/upload-artifact@v4
@@ -62,12 +67,18 @@ jobs:
           name: allure-results
           path: allure-results
 
-      # Upload Selenide screenshots / test reports
-      - name: Upload Test Screenshots and Reports
+      - name: Upload Selenide screenshots and reports
         uses: actions/upload-artifact@v4
         with:
           name: test-screenshots
           path: build/reports/tests/
 
-
-          
+      - name: Upload via SFTP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          key: ${{ secrets.SFTP_PRIVATE_KEY }}
+          port: 22
+          source: "allure-report/*"
+          target: "test/colombia"
