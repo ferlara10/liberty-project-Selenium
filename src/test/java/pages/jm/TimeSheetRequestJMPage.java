@@ -33,7 +33,7 @@ public class TimeSheetRequestJMPage extends TimeSheetRequestPage {
         if (request.getHoliday().equals("1"))
             $(holidayCheck).click();
 
-        $(getReasonSelect()).setValue(request.getReason());
+        //$(getReasonSelect()).setValue(request.getReason());
         $(getCostCenterLocator()).selectOptionByValue(request.getCostCenter());
         $(getCommentLocator()).setValue("testing");
         String date = CommonTest.convertDate(request.getDateBeg(),"E");

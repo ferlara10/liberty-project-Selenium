@@ -166,7 +166,7 @@ public class HoursColombiaSuite {
                 requestExist = requestPage.verifyRequestExist(scenario);
                 if (isRequestSent && !requestExist){
                     String currentDate = requestPage.getCurrentFromDateFilter();
-                    int difference = getDifferenceByMonths(currentDate,getTodayDate());
+                    int difference = getDifferenceByMonths(currentDate, language);
                     System.out.println("         -> Retrying to find the request Current: "+currentDate+"_Difference: "+difference);
                     if (difference < 6){
                         requestPage.changeFromDateFilter("01/01/2023");
@@ -181,7 +181,7 @@ public class HoursColombiaSuite {
                 requestExist = requestPage.verifySurchargeRequestExist(scenario);
                 if (isRequestSent && !requestExist){
                     String currentDate = requestPage.getCurrentFromDateFilter();
-                    int difference = getDifferenceByMonths(currentDate,getTodayDate());
+                    int difference = getDifferenceByMonths(currentDate, "Español");
                     System.out.println("         -> Retrying to find the request Current: "+currentDate+"_Difference: "+difference);
                     if (difference < 6){
                         requestPage.changeFromDateFilter("01/01/2023");
@@ -233,7 +233,7 @@ public class HoursColombiaSuite {
                 requestExist = requestPage.verifyRequestExist(scene, "Pendiente", this.oneID);
                 if (!requestExist){
                     String currentDate = requestPage.getCurrentFromDateFilter();
-                    int difference = getDifferenceByMonths(currentDate,getTodayDate());
+                    int difference = getDifferenceByMonths(currentDate, "Español");
                     System.out.println("         -> Retrying to find the request Current: "+currentDate+"_Difference: "+difference);
                     if (difference < 6){
                         requestPage.changeFromDateFilter("01/01/2023");
@@ -260,7 +260,7 @@ public class HoursColombiaSuite {
                 requestExist = requestPage.verifyRequestExist(scene, "Pendiente", this.oneID);
                 if (!requestExist){
                     String currentDate = requestPage.getCurrentFromDateFilter();
-                    int difference = getDifferenceByMonths(currentDate,getTodayDate());
+                    int difference = getDifferenceByMonths(currentDate, "Español");
                     System.out.println("         -> Retrying to find the request Current: "+currentDate+"_Difference: "+difference);
                     if (difference < 6){
                         requestPage.changeFromDateFilter("01/01/2023");

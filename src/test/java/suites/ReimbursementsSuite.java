@@ -159,7 +159,7 @@ public class ReimbursementsSuite {
             requestExist = requestPage.verifyReimbursementExist(scenario, status, language);
             if (isRequestSent && !requestExist) {
                 String currentDate = requestPage.getCurrentFromDateFilter();
-                int difference = getDifferenceByMonths(currentDate, getTodayDate());
+                int difference = getDifferenceByMonths(currentDate, language);
                 System.out.println("         -> Retrying to find the request Current: " + currentDate + "_Difference: " + difference);
                 if (difference < 6) {
                     requestPage.changeFromDateFilter("01/01/2023");
@@ -207,7 +207,7 @@ public class ReimbursementsSuite {
                 if (!requestExist){
                     System.out.println("         -> Retrying to find the request");
                     String currentDate = requestPage.getCurrentFromDateFilter();
-                    int difference = getDifferenceByMonths(currentDate,getTodayDate());
+                    int difference = getDifferenceByMonths(currentDate, language);
                     if (difference < 6){
                         requestPage.changeFromDateFilter("01/01/2023");
                         requestExist = requestPage.verifyReimbursementExist(scenario, status, language);

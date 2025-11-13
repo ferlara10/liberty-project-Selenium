@@ -238,8 +238,17 @@ public class CommonTest {
         return "null";
     }
 
-    public static int getDifferenceByMonths(String startDate, String endDate){
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    public static int getDifferenceByMonths(String startDate, String language){
+        DateTimeFormatter formatter;
+        String endDate = "";
+        if (language.equals("Español") || language.equals("Spanish")) {
+            formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            endDate = getTodayDate();
+        } else {
+            formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+            endDate = getTodayDateEnglish();
+        }
+
 
         LocalDate start = LocalDate.parse(startDate, formatter);
         LocalDate end = LocalDate.parse(endDate, formatter);
