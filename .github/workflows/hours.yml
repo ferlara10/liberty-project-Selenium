@@ -1,5 +1,10 @@
 name: Run Hours Suite
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 on:
   workflow_dispatch:
     inputs:
@@ -16,6 +21,10 @@ on:
           - International.xml
           - Reimbursements.xml
           - testng.xml
+      report:
+        description: "Country code to publish (pa, co, jm, cr, in)"
+        required: true
+        default: "pa"
 
 jobs:
   run-tests:
@@ -52,6 +61,32 @@ jobs:
           mvn clean test -DsuiteXmlFile=${{ github.event.inputs.suite }} -Dselenide.headless=true
         continue-on-error: true
 
+      - name: Install Allure CLI
+        run: |
+          LATEST_URL=$(curl -s https://api.github.com/repos/allure-framework/allure2/releases/latest \
+          | grep browser_download_url \
+          | grep zip \
+          | cut -d '"' -f 4)
+
+          echo "Downloading Allure from: $LATEST_URL"
+
+          wget "$LATEST_URL" -O allure.zip
+          unzip allure.zip -d /opt/allure
+          VERSION=$(ls /opt/allure)
+          sudo ln -s /opt/allure/$VERSION/bin/allure /usr/local/bin/allure
+
+
+      - name: Generate Allure report
+        run: allure generate allure-results --clean -o allure-report
+
+      - name: Deploy Allure report
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./allure-report
+          destination_dir: ${{ github.event.inputs.country }}
+
       # ✅ Updated Allure Action section
       - name: Generate & Publish Allure Report
         uses: simple-elf/allure-report-action@master
@@ -72,13 +107,3 @@ jobs:
         with:
           name: test-screenshots
           path: build/reports/tests/
-
-      - name: Upload via SFTP
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SFTP_HOST }}
-          username: ${{ secrets.SFTP_USER }}
-          key: ${{ secrets.SFTP_PRIVATE_KEY }}
-          port: 22
-          source: "allure-report/*"
-          target: "test/colombia"
